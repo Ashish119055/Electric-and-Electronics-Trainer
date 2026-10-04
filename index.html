@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ઇલેક્ટ્રિકલ અને ઇલેક્ટ્રોનિક્સ ટ્રેનર</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E7ECE6;--ink:#14201A;--muted:#566A5E;--panel:#FFFFFF;--line:#C8D3CA;
+  --pcb:#0E5236;--pcbEdge:#093A26;--copper:#D39A4A;--silk:#F2F0E6;--live:#FFD24A;
+  --red:#E5402E;--accent:#0E7A4F;--lcd:#0F2219;--lcdInk:#A8F0BF;--lcdDim:#7FA890;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1310;--ink:#E3ECE6;--muted:#93A79A;--panel:#141F1A;--line:#24352C;--accent:#3FCB8A;--pcbEdge:#1E6B49;
+}}
+:root[data-theme="dark"]{--bg:#0B1310;--ink:#E3ECE6;--muted:#93A79A;--panel:#141F1A;--line:#24352C;--accent:#3FCB8A;--pcbEdge:#1E6B49}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind Vadodara","Noto Sans Gujarati","Shruti",system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:960px;margin:0 auto;padding:14px 14px 40px}
+header{padding:6px 0 2px}
+h1{font-size:clamp(1.55rem,5.4vw,2.3rem);line-height:1.12;margin:6px 0 6px;font-weight:700;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:60ch}
+.progress{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:600;font-size:.95rem}
+.pbar{flex:1;max-width:260px;height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.pbar span{display:block;height:100%;background:var(--copper);transition:width .4s}
+nav.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0 10px;scrollbar-width:none;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;font-size:.95rem;padding:7px 14px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--pcb);border-color:var(--pcb);color:var(--silk)}
+.tab .ok{color:var(--copper);margin-left:4px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--copper);outline-offset:2px}
+.layout{display:grid;gap:14px}
+@media (min-width:800px){.layout{grid-template-columns:1.2fr 1fr;align-items:start}}
+.col{display:grid;gap:12px}
+.board{position:relative;border-radius:16px;padding:30px 8px 8px;
+  background:
+   radial-gradient(circle at 14px 14px,var(--bg) 0 3.5px,var(--copper) 3.5px 6.5px,transparent 7px),
+   radial-gradient(circle at calc(100% - 14px) 14px,var(--bg) 0 3.5px,var(--copper) 3.5px 6.5px,transparent 7px),
+   radial-gradient(circle at 14px calc(100% - 14px),var(--bg) 0 3.5px,var(--copper) 3.5px 6.5px,transparent 7px),
+   radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),var(--bg) 0 3.5px,var(--copper) 3.5px 6.5px,transparent 7px),
+   var(--pcb);
+  box-shadow:inset 0 0 0 2px var(--pcbEdge)}
+.board .tag{position:absolute;top:7px;left:28px;color:var(--silk);font-size:.82rem;font-weight:600;opacity:.9}
+.board svg{width:100%;height:auto;display:block}
+.trace{stroke:var(--copper);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.trace.on{stroke:var(--live)}
+.flow{stroke:var(--live);stroke-width:3.2;fill:none;stroke-dasharray:3 11;stroke-linecap:round}
+.comp{stroke:var(--silk);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.comp.thick{stroke-width:4}
+.comp.dash{stroke-dasharray:4 4;stroke-width:1.4;opacity:.75}
+.pad{fill:var(--copper)}
+.silk{fill:var(--silk);font-family:"Hind Vadodara",sans-serif;font-size:11px}
+.silk.b{font-weight:700;font-size:13px}
+.silk.v{font-weight:600}
+.bad{stroke:#FF6B5B;stroke-width:3}
+.meters{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.meter{background:var(--lcd);border-radius:10px;padding:7px 11px;box-shadow:inset 0 0 0 1px #1F3A2C}
+.meter.wide{grid-column:span 2}
+.meter small{display:block;color:var(--lcdDim);font-size:.8rem;line-height:1.3}
+.meter b{font-family:"Share Tech Mono",ui-monospace,"Hind Vadodara",monospace;font-weight:400;font-size:1.45rem;color:var(--lcdInk);line-height:1.25}
+.meter.wide b{font-family:"Hind Vadodara",sans-serif;font-weight:600;font-size:1.15rem}
+.meter.warn b{color:var(--live)}.meter.err b{color:#FF7A6B}
+.formula{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--copper);border-radius:10px;padding:9px 12px;font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h3{margin:0 0 8px;font-size:1.05rem}
+.ctrl{margin:2px 0 10px}
+.ctrl label{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.ctrl output{font-family:"Share Tech Mono",monospace;color:var(--accent);font-size:1.05rem}
+input[type=range]{width:100%;accent-color:var(--accent);height:34px;margin:0}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.seg button,.btn{font:inherit;font-weight:600;font-size:.95rem;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:7px 13px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary,.primary{font:inherit;font-weight:700;background:var(--pcb);color:var(--silk);border:0;padding:10px 18px;border-radius:10px;cursor:pointer}
+.horn{width:100%;font:inherit;font-weight:700;font-size:1.15rem;padding:20px 12px;border-radius:16px;border:0;cursor:pointer;color:#1b1400;background:var(--live);box-shadow:0 6px 0 #B38C12;touch-action:none;user-select:none;-webkit-user-select:none;margin-bottom:12px}
+.horn.down{transform:translateY(5px);box-shadow:0 1px 0 #B38C12}
+.toggles{display:flex;gap:10px;margin-bottom:6px}
+.tog{flex:1;font:inherit;font-weight:700;font-size:1.1rem;padding:14px 8px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.tog.on{background:var(--live);border-color:var(--live);color:#1b1400}
+.tasks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tasks li{display:flex;gap:10px;align-items:flex-start}
+.tasks li::before{content:"";flex:0 0 20px;height:20px;border-radius:50%;border:2px solid var(--line);margin-top:2px}
+.tasks li.done{color:var(--muted)}
+.tasks li.done::before{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3L15 7' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;border-color:var(--accent)}
+.learn p{margin:0 0 8px;max-width:62ch}
+.learn .f{font-weight:700;font-size:1.05rem;color:var(--accent)}
+.learn a{color:var(--accent)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+tr.cur td{background:color-mix(in srgb,var(--live) 30%,transparent);font-weight:700}
+.guess{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.fb{font-weight:700;margin:6px 0}
+.fb.ok{color:var(--accent)}.fb.no{color:var(--red)}
+.quiz{max-width:640px;margin:0 auto}
+.quiz h2{font-size:1.25rem;line-height:1.35;margin:4px 0 14px}
+.qn{color:var(--muted);margin:10px 0 0;font-weight:600}
+.qbar{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.qbar span{display:block;height:100%;background:var(--copper)}
+.opts{display:grid;gap:8px;margin-bottom:12px}
+.opt{font:inherit;text-align:left;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-weight:500}
+.opt.right{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.opt.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 15%,transparent)}
+.score{font-family:"Share Tech Mono",monospace;font-size:3.2rem;margin:4px 0;color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);background:var(--pcb);color:var(--silk);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 28px);box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .3s;z-index:20}
+.toast.show{transform:translate(-50%,0)}
+footer{margin-top:24px;color:var(--muted);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){.toast,.pbar span{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>ઇલેક્ટ્રિકલ અને ઇલેક્ટ્રોનિક્સ ટ્રેનર</h1>
+  <p>સ્લાઇડર ફેરવો, સ્વીચ દબાવો અને સર્કિટમાં પ્રવાહ વહેતો જુઓ. દરેક પ્રયોગના ટાસ્ક પૂરા કરો.</p>
+  <div class="progress"><span id="ptext"></span><div class="pbar"><span id="pfill"></span></div></div>
+</header>
+<nav class="tabs" id="tabs" role="tablist"></nav>
+<main id="stage"></main>
+<footer>મિકેનિક ડીઝલ અને ઇલેક્ટ્રિકલ ટ્રેડના તાલીમાર્થીઓ માટે. સરકારી ITI મણિનગર (ખોખરા), અમદાવાદ.</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let done=store.get('et-done',{});
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toFixed(d):'--';
+const fmtI=a=>!Number.isFinite(a)?'--':(a<1?(a*1000).toFixed(1)+' mA':a.toFixed(2)+' A');
+const spd=(I,k)=>I>1e-6?Math.min(180,18+I*k):0;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const flowOff={};
+
+/* ---------- SVG parts ---------- */
+const DEFS=`<defs>
+<radialGradient id="glow"><stop offset="0" stop-color="#FFF2B0"/><stop offset=".4" stop-color="#FFD24A" stop-opacity=".6"/><stop offset="1" stop-color="#FFD24A" stop-opacity="0"/></radialGradient>
+<radialGradient id="heat"><stop offset="0" stop-color="#FFB15C"/><stop offset=".5" stop-color="#FF6A2B" stop-opacity=".55"/><stop offset="1" stop-color="#FF6A2B" stop-opacity="0"/></radialGradient>
+<radialGradient id="ledg"><stop offset="0" stop-color="#FFB0A0"/><stop offset=".4" stop-color="#FF4D3D" stop-opacity=".6"/><stop offset="1" stop-color="#FF4D3D" stop-opacity="0"/></radialGradient>
+</defs>`;
+const svgW=(inner,h=220)=>`<svg viewBox="0 0 340 ${h}" role="img" aria-label="સર્કિટ ડાયાગ્રામ">${DEFS}${inner}</svg>`;
+const mask=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--pcb)"/>`;
+const flow=(k,d,s)=>`<path class="flow" data-k="${k}" data-s="${s}" d="${d}" stroke-dashoffset="${flowOff[k]||0}" style="opacity:${s>0?1:0}"/>`;
+const T=(x,y,t,a='middle',c='silk')=>`<text class="${c}" x="${x}" y="${y}" text-anchor="${a}">${t}</text>`;
+function resH(x,y){return mask(x-21,y-9,42,18)+`<polyline class="comp" points="${x-22},${y} ${x-15},${y} ${x-12},${y-7} ${x-6},${y+7} ${x},${y-7} ${x+6},${y+7} ${x+12},${y-7} ${x+15},${y} ${x+22},${y}"/>`}
+function resV(x,y){return mask(x-9,y-21,18,42)+`<polyline class="comp" points="${x},${y-22} ${x},${y-15} ${x+7},${y-12} ${x-7},${y-6} ${x+7},${y} ${x-7},${y+6} ${x+7},${y+12} ${x},${y+15} ${x},${y+22}"/>`}
+function bat(x,y,up=true){const a=up?-4:4,b=up?4:-4;return mask(x-16,y-12,32,24)+`<line class="comp" x1="${x-14}" y1="${y+a}" x2="${x+14}" y2="${y+a}"/><line class="comp thick" x1="${x-7}" y1="${y+b}" x2="${x+7}" y2="${y+b}"/>`+T(x-21,y+a+(up?2:9),'+','middle','silk b')}
+function lamp(x,y,br){return `<circle cx="${x}" cy="${y}" r="34" fill="url(#glow)" opacity="${br}"/><circle cx="${x}" cy="${y}" r="14" class="comp" style="fill:${br>0.05?'rgba(255,210,74,'+(0.25+br*0.6)+')':'var(--pcb)'}"/><path class="comp" d="M${x-10} ${y-10}L${x+10} ${y+10}M${x+10} ${y-10}L${x-10} ${y+10}"/>`}
+function meterS(x,y,L){return `<circle cx="${x}" cy="${y}" r="13" class="comp" style="fill:var(--pcb)"/>`+T(x,y+4.5,L,'middle','silk b')}
+function gnd(x,y){return `<path class="comp" d="M${x} ${y}V${y+6}M${x-10} ${y+6}H${x+10}M${x-6} ${y+10}H${x+6}M${x-2} ${y+14}H${x+2}"/>`}
+const pad=(x,y,l,side)=>`<circle class="pad" cx="${x}" cy="${y}" r="4"/>`+T(side=='l'?x-8:x+8,y+4,l,side=='l'?'end':'start','silk v');
+const xMark=(x,y)=>`<path class="bad" d="M${x-7} ${y-7}L${x+7} ${y+7}M${x+7} ${y-7}L${x-7} ${y+7}"/>`;
+
+/* ---------- Modules ---------- */
+const M={};
+
+M.ohm={id:'ohm',title:'ઓહમનો નિયમ',tag:'પ્રયોગ 1: ઓહમનો નિયમ',
+ state:{V:9,R:10},
+ calc(s){const I=s.V/s.R;return{I,P:s.V*I}},
+ ctrls:s=>slider('V','વોલ્ટેજ (V)',0,24,0.5,s)+slider('R','અવરોધ (R)',1,100,1,s),
+ out:(k,s)=>k=='V'?s.V.toFixed(1)+' V':s.R+' Ω',
+ svg(s,c){return svgW(`<path class="trace" d="M40 80H300V185H40Z M130 80V32H210V80"/>
+ ${flow('o1','M40 80H300V185H40Z',spd(c.I,25))}
+ <ellipse cx="170" cy="80" rx="40" ry="22" fill="url(#heat)" opacity="${Math.min(1,c.P/60)}"/>
+ ${bat(40,132)}${resH(170,80)}${meterS(170,32,'V')}${meterS(300,132,'A')}
+ ${T(60,136,s.V.toFixed(1)+' V','start','silk v')}${T(170,108,'R = '+s.R+' Ω','middle','silk v')}
+ ${T(190,36,s.V.toFixed(1)+' V','start','silk v')}${T(282,136,fmtI(c.I),'end','silk v')}
+ ${T(170,206,'ગરમી (પાવર): '+fmt(c.P,1)+' W')}`)},
+ meters:(s,c)=>[['પ્રવાહ (I)',fmtI(c.I)],['પાવર (P)',fmt(c.P,1)+' W'],['વોલ્ટેજ (V)',s.V.toFixed(1)+' V'],['અવરોધ (R)',s.R+' Ω']],
+ formula:(s,c)=>`I = V ÷ R = ${s.V.toFixed(1)} ÷ ${s.R} = ${fmtI(c.I)}`,
+ tasks:[
+  {t:'V = 12 V અને R = 6 Ω સેટ કરો. પ્રવાહ 2 A મળશે.',c:s=>s.V==12&&s.R==6},
+  {t:'વોલ્ટેજ 12 V રાખી પ્રવાહ 0.5 A મેળવો.',c:(s,c)=>s.V==12&&Math.abs(c.I-0.5)<1e-6},
+  {t:'પાવર બરાબર 36 W મેળવો.',c:(s,c)=>Math.abs(c.P-36)<1e-6}],
+ learn:`<h3>સમજો</h3><p>વોલ્ટેજ પ્રવાહને ધક્કો મારે છે, અવરોધ તેને રોકે છે. વોલ્ટેજ વધે તો પ્રવાહ વધે, અવરોધ વધે તો પ્રવાહ ઘટે.</p>
+ <p class="f">V = I × R<br>I = V ÷ R<br>P = V × I</p>
+ <p><b>વાહનમાં:</b> ઢીલું કે કાટ લાગેલું કનેક્શન અવરોધ વધારે છે. પરિણામે હેડલાઇટ ઝાંખી થાય અને સ્ટાર્ટર મોટર ધીમી ફરે.</p>`};
+
+M.sp={id:'sp',title:'સિરીઝ-પેરેલલ',tag:'પ્રયોગ 2: સિરીઝ અને પેરેલલ જોડાણ',
+ state:{mode:'s',n:3,V:9,r0:10,r1:20,r2:30},
+ calc(s){const rs=[s.r0,s.r1,s.r2].slice(0,s.n);let Req,I,items;
+  if(s.mode=='s'){Req=rs.reduce((a,b)=>a+b,0);I=s.V/Req;items=rs.map(r=>({r,v:I*r,i:I}))}
+  else{Req=1/rs.reduce((a,r)=>a+1/r,0);items=rs.map(r=>({r,v:s.V,i:s.V/r}));I=s.V/Req}
+  return{Req,I,items,P:s.V*I}},
+ ctrls:s=>seg('mode',[['s','સિરીઝ'],['p','પેરેલલ']])+seg('n',[[2,'2 રેઝિસ્ટર'],[3,'3 રેઝિસ્ટર']])+slider('V','સપ્લાય વોલ્ટેજ',1,24,0.5,s)+slider('r0','R1',1,50,1,s)+slider('r1','R2',1,50,1,s)+slider('r2','R3',1,50,1,s),
+ out:(k,s)=>k=='V'?s.V.toFixed(1)+' V':s[k]+' Ω',
+ after(s){const r=document.getElementById('r2');if(r)r.closest('.ctrl').hidden=s.n<3},
+ svg(s,c){let o='';
+  if(s.mode=='s'){const xs=s.n==2?[125,215]:[100,170,240];
+   o+=`<path class="trace" d="M30 60H310V178H30Z"/>`+flow('s1','M30 60H310V178H30Z',spd(c.I,40))+bat(30,119);
+   xs.forEach((x,i)=>{o+=resH(x,60)+T(x,40,'R'+(i+1)+' = '+c.items[i].r+'Ω','middle','silk v')+T(x,86,c.items[i].v.toFixed(2)+' V')});
+   o+=meterS(170,178,'A');
+  }else{const xs=s.n==2?[170,280]:[130,210,290],L=xs[xs.length-1];
+   o+=`<path class="trace" d="M30 60H${L}M30 178H${L}M30 60V178${xs.map(x=>`M${x} 60V178`).join('')}"/>`;
+   xs.forEach((x,i)=>{o+=flow('p'+i,`M30 60H${x}V178H30`,spd(c.items[i].i,40))});
+   o+=bat(30,119);
+   xs.forEach((x,i)=>{o+=resV(x,119)+T(x+12,113,'R'+(i+1),'start','silk v')+T(x+12,127,c.items[i].r+'Ω','start')+T(x,200,fmtI(c.items[i].i))});
+   o+=meterS(80,178,'A');
+  }
+  o+=T(48,123,s.V.toFixed(1)+' V','start','silk v');
+  return svgW(o,215)},
+ meters:(s,c)=>[['કુલ અવરોધ',fmt(c.Req,2)+' Ω'],['કુલ પ્રવાહ',fmtI(c.I)],['સપ્લાય',s.V.toFixed(1)+' V'],['પાવર',fmt(c.P,1)+' W']],
+ formula:(s,c)=>s.mode=='s'?`Req = ${c.items.map(x=>x.r).join(' + ')} = ${fmt(c.Req,2)} Ω`:`1/Req = ${c.items.map(x=>'1/'+x.r).join(' + ')} → Req = ${fmt(c.Req,2)} Ω`,
+ extra:(s,c)=>`<div class="panel tbl"><h3>દરેક રેઝિસ્ટરનું માપ</h3><table><tr><th>રેઝિસ્ટર</th><th>વોલ્ટેજ</th><th>પ્રવાહ</th></tr>${c.items.map((x,i)=>`<tr><td>R${i+1} (${x.r} Ω)</td><td>${x.v.toFixed(2)} V</td><td>${fmtI(x.i)}</td></tr>`).join('')}</table></div>`,
+ tasks:[
+  {t:'સિરીઝમાં 3 રેઝિસ્ટર જોડી કુલ અવરોધ 60 Ω બનાવો.',c:(s,c)=>s.mode=='s'&&s.n==3&&Math.abs(c.Req-60)<1e-6},
+  {t:'પેરેલલમાં 20 Ω અને 20 Ω જોડો. કુલ અવરોધ 10 Ω થશે.',c:s=>s.mode=='p'&&s.n==2&&s.r0==20&&s.r1==20},
+  {t:'સિરીઝમાં કોઈ એક રેઝિસ્ટર પર બરાબર 6 V ડ્રોપ મેળવો.',c:(s,c)=>s.mode=='s'&&c.items.some(x=>Math.abs(x.v-6)<0.005)}],
+ learn:`<h3>સમજો</h3><p><b>સિરીઝ:</b> પ્રવાહ બધે સરખો, વોલ્ટેજ વહેંચાય. Req = R1 + R2 + R3</p>
+ <p><b>પેરેલલ:</b> વોલ્ટેજ બધે સરખો, પ્રવાહ વહેંચાય. 1/Req = 1/R1 + 1/R2 + 1/R3</p>
+ <p><b>વાહનમાં:</b> હેડલાઇટ પેરેલલમાં હોય છે, એટલે એક બલ્બ ઊડે તો બીજો ચાલુ રહે. બેટરીના 6 સેલ સિરીઝમાં: 6 × 2.1 V = 12.6 V.</p>`};
+
+const RS=[0,100,220,330,470,1000];
+M.led={id:'led',title:'ડાયોડ અને LED',tag:'પ્રયોગ 3: ડાયોડ અને LED',
+ state:{b:'f',V:5,ri:2,burnt:0,cause:''},
+ calc(s){const R=RS[s.ri];const burn=c=>{if(!s.burnt){s.burnt=1;s.cause=c;toast('LED બળી ગઈ! કારણ નીચે વાંચો.')}};
+  if(!s.burnt){
+   if(s.b=='r'){if(s.V>5)burn('rev')}
+   else if(s.V>2){if(R==0)burn('short');else if((s.V-2)/R>0.03)burn('over')}
+  }
+  if(s.burnt)return{R,I:0,vl:0,vr:0,st:'burnt'};
+  if(s.b=='r')return{R,I:0,vl:-s.V,vr:0,st:'off'};
+  if(s.V<=2)return{R,I:0,vl:s.V,vr:0,st:'off'};
+  const I=(s.V-2)/R;return{R,I,vl:2,vr:I*R,st:'on'}},
+ ctrls:s=>seg('b',[['f','ફોરવર્ડ બાયસ'],['r','રિવર્સ બાયસ']])+slider('V','સપ્લાય વોલ્ટેજ',0,12,0.5,s)+slider('ri','સિરીઝ રેઝિસ્ટર',0,5,1,s)+`<button class="btn primary" data-act="reset" id="ledReset" hidden>નવી LED લગાવો</button>`,
+ out:(k,s)=>k=='V'?s.V.toFixed(1)+' V':RS[s.ri]+' Ω',
+ act(a){if(a=='reset'){const s=this.state;s.burnt=0;s.cause='';s.V=5;s.ri=2;s.b='f'}},
+ after(s){$('#ledReset').hidden=!s.burnt},
+ svg(s,c){const br=Math.min(1,c.I/0.02);let o=`<path class="trace" d="M40 60H300V178H40Z"/>`+flow('l1','M40 60H300V178H40Z',spd(c.I,4000));
+  o+=bat(40,119,s.b=='f')+T(60,123,s.V.toFixed(1)+' V','start','silk v');
+  if(c.R>0)o+=resH(120,60)+T(120,40,'R = '+c.R+' Ω','middle','silk v');else o+=T(120,44,'0 Ω (સીધો વાયર)','middle','silk v');
+  o+=`<ellipse cx="220" cy="60" rx="44" ry="34" fill="url(#ledg)" opacity="${br}"/>`+mask(208,48,24,24);
+  const fill=c.st=='burnt'?'#2B2B2B':(c.st=='on'?`rgba(255,77,61,${0.4+br*0.6})`:'none');
+  o+=`<polygon class="comp" points="210,50 210,70 228,60" style="fill:${fill}"/><line class="comp" x1="228" y1="50" x2="228" y2="70"/>`;
+  o+=`<path class="comp" d="M222 46l6-8M226 49l7-7" style="opacity:${c.st=='on'?1:.45}"/>`;
+  o+=T(220,92,'LED (2 V)','middle','silk v');
+  if(c.st=='burnt')o+=xMark(219,60)+T(220,108,'બળી ગઈ','middle','silk b');
+  o+=meterS(170,178,'mA')+T(190,182,(c.I*1000).toFixed(1)+' mA','start','silk v');
+  return svgW(o,210)},
+ meters:(s,c)=>[['પ્રવાહ',(c.I*1000).toFixed(1)+' mA',c.I>0.025?'warn':''],['LED પર વોલ્ટેજ',c.vl.toFixed(2)+' V'],['રેઝિસ્ટર પર વોલ્ટેજ',c.vr.toFixed(2)+' V'],['LED',c.st=='on'?'ચાલુ':(c.st=='burnt'?'બળી ગઈ':'બંધ'),c.st=='burnt'?'err':'']],
+ formula(s,c){if(c.st=='burnt')return{short:'રેઝિસ્ટર ન હોવાથી પ્રવાહ અમર્યાદિત થયો અને LED બળી ગઈ.',over:'પ્રવાહ 30 mA થી વધી ગયો. મોટો રેઝિસ્ટર વાપરો અથવા વોલ્ટેજ ઘટાડો.',rev:'રિવર્સ વોલ્ટેજ 5 V થી વધી ગયો. LED રિવર્સમાં વધુ વોલ્ટેજ સહન નથી કરતી.'}[s.cause];
+  if(s.b=='r')return'રિવર્સ બાયસમાં ડાયોડ પ્રવાહને રોકે છે.';
+  if(c.st=='off')return'LED ચાલુ થવા માટે ઓછામાં ઓછા 2 V જોઈએ.';
+  return`I = (V − 2) ÷ R = (${s.V.toFixed(1)} − 2) ÷ ${c.R} = ${(c.I*1000).toFixed(1)} mA`},
+ tasks:[
+  {t:'ફોરવર્ડ બાયસમાં LED ને 15 થી 25 mA વચ્ચે ચાલુ કરો.',c:(s,c)=>c.st=='on'&&c.I>=0.015&&c.I<=0.025},
+  {t:'રિવર્સ બાયસમાં 3 થી 5 V આપો અને જુઓ કે LED બંધ રહે છે.',c:s=>s.b=='r'&&!s.burnt&&s.V>=3&&s.V<=5},
+  {t:'0 Ω (રેઝિસ્ટર વગર) LED ચાલુ કરી જુઓ શું થાય છે.',c:s=>s.burnt&&s.cause=='short'}],
+ learn:`<h3>સમજો</h3><p>ડાયોડ પ્રવાહને માત્ર એક જ દિશામાં વહેવા દે છે. LED સાથે હંમેશા સિરીઝ રેઝિસ્ટર જોઈએ, નહીંતર તે તરત બળી જાય.</p>
+ <p class="f">R = (Vs − V<sub>LED</sub>) ÷ I</p>
+ <p><b>વાહનમાં:</b> 12 V માં 20 mA માટે R = (12 − 2) ÷ 0.02 = 500 Ω, એટલે 470 કે 560 Ω વાપરો. ઓલ્ટરનેટરમાં ડાયોડ AC ને DC માં ફેરવે છે.</p>`};
+
+M.tr={id:'tr',title:'ટ્રાન્ઝિસ્ટર સ્વીચ',tag:'પ્રયોગ 4: NPN ટ્રાન્ઝિસ્ટર સ્વીચ તરીકે',
+ state:{vin:2},
+ calc(s){const Ib=s.vin>0.7?(s.vin-0.7)/1000:0;let Ic=100*Ib,region=Ib==0?'cut':'act';
+  if(Ic>=(12-0.2)/24){Ic=(12-0.2)/24;region='sat'}
+  return{Ib,Ic,region,Vce:region=='sat'?0.2:12-Ic*24}},
+ ctrls:s=>slider('vin','ઇનપુટ વોલ્ટેજ (Vin)',0,8,0.1,s)+`<div class="seg"><button data-set="vin:0">સ્વીચ OFF (0 V)</button><button data-set="vin:8">સ્વીચ ON (8 V)</button></div>`,
+ out:(k,s)=>s.vin.toFixed(1)+' V',
+ svg(s,c){let o=`<path class="trace" d="M200 30H260M230 30V58M230 86V112M230 148V198H50V174M50 146V130H210"/>`;
+  o+=flow('tc','M230 30V112',spd(c.Ic,250))+flow('te','M230 148V198',spd(c.Ic,250))+flow('tb','M50 146V130H208',spd(c.Ib*1000,15));
+  o+=T(230,22,'+12 V','middle','silk b')+lamp(230,72,c.Ic/0.49)+T(252,76,'બલ્બ 6 W','start','silk v');
+  o+=`<circle cx="222" cy="130" r="22" class="comp" style="fill:var(--pcb)"/><line class="comp" x1="210" y1="116" x2="210" y2="144" style="stroke-width:3.5"/><line class="comp" x1="210" y1="123" x2="230" y2="112"/><line class="comp" x1="210" y1="137" x2="229" y2="147.5"/><polygon points="229,147.5 220.1,147.1 223.9,140.1" style="fill:var(--silk)"/>`;
+  o+=T(240,108,'C','start')+T(198,124,'B','end')+T(240,160,'E','start');
+  o+=resH(120,130)+T(120,116,'Rb = 1 kΩ','middle','silk v');
+  o+=bat(50,160)+T(68,164,'Vin '+s.vin.toFixed(1)+' V','start','silk v')+gnd(140,198);
+  return svgW(o,220)},
+ meters:(s,c)=>[['બેઝ પ્રવાહ (Ib)',(c.Ib*1000).toFixed(2)+' mA'],['કલેક્ટર પ્રવાહ (Ic)',fmtI(c.Ic)],['Vce',c.Vce.toFixed(2)+' V'],['ઇનપુટ',s.vin.toFixed(1)+' V'],['અવસ્થા',{cut:'કટ-ઓફ (સ્વીચ OFF)',act:'એક્ટિવ (આંશિક ચાલુ)',sat:'સેચ્યુરેશન (સ્વીચ ON)'}[c.region],'wide'+(c.region=='act'?' warn':'')]],
+ formula:(s,c)=>c.region=='cut'?'Vin 0.7 V થી ઓછું છે, બેઝ પ્રવાહ નથી.':(c.region=='sat'?'Ic મહત્તમ = (12 − 0.2) ÷ 24 Ω = 0.49 A':`Ic = β × Ib = 100 × ${(c.Ib*1000).toFixed(2)} mA = ${fmtI(c.Ic)}`),
+ tasks:[
+  {t:'બલ્બ બંધ કરો: ટ્રાન્ઝિસ્ટરને કટ-ઓફમાં લાવો.',c:(s,c)=>c.region=='cut'},
+  {t:'બલ્બ અડધો ચમકાવો: Ic 0.2 થી 0.3 A (એક્ટિવ).',c:(s,c)=>c.region=='act'&&c.Ic>=0.2&&c.Ic<=0.3},
+  {t:'બલ્બ પૂરો ચાલુ કરો: સેચ્યુરેશન.',c:(s,c)=>c.region=='sat'}],
+ learn:`<h3>સમજો</h3><p>નાનો બેઝ પ્રવાહ મોટા કલેક્ટર પ્રવાહને કંટ્રોલ કરે છે. સ્વીચ તરીકે વાપરતાં કટ-ઓફ એટલે OFF અને સેચ્યુરેશન એટલે ON.</p>
+ <p class="f">Ic = β × Ib (અહીં β = 100)</p>
+ <p><b>વાહનમાં:</b> ECU ટ્રાન્ઝિસ્ટર દ્વારા ઇન્જેક્ટર, રિલે અને ફ્યુઅલ પંપ ચલાવે છે.</p>`};
+
+const FAULTS={fuse:'ફ્યુઝ ઊડેલો',coil:'રિલે કોઇલ ખુલ્લી',button:'હોર્ન બટન ખરાબ',horn:'હોર્ન ખરાબ'};
+M.relay={id:'relay',title:'રિલે અને હોર્ન',tag:'પ્રયોગ 5: ઓટો રિલે હોર્ન સર્કિટ',
+ state:{mode:'n',pressed:0,fault:'fuse',guesses:0,last:null,reveal:0},
+ calc(s){const f=s.mode=='f'?s.fault:'none',fuseOK=f!='fuse',coilOK=f!='coil',btnOK=f!='button',hornOK=f!='horn',P=s.pressed;
+  const v30=fuseOK?12:0,v85=!fuseOK||!coilOK?0:(P&&btnOK?0:12),en=fuseOK&&coilOK&&P&&btnOK;
+  return{v30,v86:v30,v85,v87:en?12:0,en,sound:en&&hornOK,f}},
+ newFault(){const k=Object.keys(FAULTS).filter(x=>x!=this.state.fault);const s=this.state;s.fault=k[Math.floor(Math.random()*k.length)];s.reveal=0;s.last=null},
+ onSeg(k){if(k=='mode'&&this.state.mode=='f')this.newFault()},
+ ctrls:s=>`<button class="horn" id="hornBtn">હોર્ન બટન દબાવી રાખો</button>`+seg('mode',[['n','સામાન્ય કામગીરી'],['f','ખામી શોધો']]),
+ act(a,b){const s=this.state;if(a=='new')this.newFault();if(a=='guess'){if(b.dataset.g==s.fault){s.guesses++;s.last='ok';s.reveal=1}else s.last='no'}},
+ bind(){const b=$('#hornBtn'),s=this.state;
+  const down=e=>{e.preventDefault();if(s.pressed)return;s.pressed=1;b.classList.add('down');ensureAudio();update()};
+  const up=()=>{if(!s.pressed)return;s.pressed=0;b.classList.remove('down');update()};
+  b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,up));
+  b.addEventListener('keydown',e=>{if(e.key==' '||e.key=='Enter')down(e)});b.addEventListener('keyup',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault())},
+ after(s,c){c.sound?hornOn():hornOff()},
+ svg(s,c){const rv=s.mode=='n'||s.reveal,f=c.f,P=s.pressed;
+  let o=`<path class="trace" d="M30 116V40H240M150 40V72M150 128V152M150 178V205M30 144V205H240V174M240 40V78M240 112V152"/>`;
+  o+=flow('rc','M30 116V40H150V205H30V144',c.en?spd(.15,200):0)+flow('rh','M30 116V40H240V205H30V144',c.sound?spd(6,25):0);
+  o+=bat(30,130)+T(46,134,'12 V','start','silk v');
+  o+=mask(70,34,30,12)+`<rect class="comp" x="70" y="35" width="30" height="10" rx="2"/>`+(rv&&f=='fuse'?`<path class="comp" d="M72 40H80M90 40H98"/>`+xMark(85,40):`<line class="comp" x1="72" y1="40" x2="98" y2="40"/>`)+T(85,27,'ફ્યુઝ','middle','silk v');
+  o+=`<rect class="comp dash" x="126" y="60" width="146" height="66" rx="6"/>`+T(200,140,'રિલે','middle','silk v');
+  o+=mask(138,80,24,40)+`<rect class="comp" x="138" y="80" width="24" height="40"/><line class="comp" x1="138" y1="120" x2="162" y2="80"/>`+T(122,104,'કોઇલ','end','silk v')+(rv&&f=='coil'?xMark(150,100):'');
+  o+=`<line class="comp dash" x1="162" y1="100" x2="246" y2="95"/>`;
+  o+=pad(150,72,'86','l')+pad(150,128,'85','l')+pad(240,78,'30','r')+pad(240,112,'87','r');
+  o+=`<line class="comp thick" x1="240" y1="78" x2="${c.en?240:257}" y2="${c.en?112:105}" style="stroke-width:3"/>`;
+  o+=`<circle class="pad" cx="150" cy="152" r="3.5"/><circle class="pad" cx="150" cy="178" r="3.5"/><line class="comp" x1="150" y1="178" x2="${P?150:166}" y2="${P?152:158}" style="stroke-width:3"/>`+T(138,169,'બટન','end','silk v')+(rv&&f=='button'?xMark(170,166):'');
+  o+=mask(230,140,32,46)+`<rect class="comp" x="233" y="152" width="8" height="22"/><polygon class="comp" points="241,152 258,142 258,184 241,174"/>`+T(222,167,'હોર્ન','end','silk v')+(rv&&f=='horn'?xMark(250,163):'');
+  if(c.sound)o+=`<path class="comp" style="stroke:var(--live)" d="M268 150Q276 163 268 176M278 142Q291 163 278 184"/>`;
+  o+=gnd(100,205);
+  return svgW(o,225)},
+ meters:(s,c)=>[['ટર્મિનલ 30',c.v30.toFixed(1)+' V'],['ટર્મિનલ 86',c.v86.toFixed(1)+' V'],['ટર્મિનલ 85',c.v85.toFixed(1)+' V'],['ટર્મિનલ 87',c.v87.toFixed(1)+' V'],['હોર્ન',c.sound?'વાગે છે':'બંધ','wide'+(c.sound?' warn':'')]],
+ formula:s=>s.mode=='n'?'બટન દબાવતાં 85 અર્થ થાય, કોઇલમાં પ્રવાહ વહે, 30 અને 87 જોડાય અને હોર્ન વાગે.':'બટન દબાવી રાખો, દરેક ટર્મિનલનો વોલ્ટેજ (અર્થના સંદર્ભમાં) જુઓ અને ખામી પસંદ કરો.',
+ extra(s){if(s.mode!='f')return'';
+  return`<div class="panel"><h3>ખામી ક્યાં છે?</h3><div class="guess">${Object.entries(FAULTS).map(([k,v])=>`<button class="btn" data-act="guess" data-g="${k}">${v}</button>`).join('')}</div>
+  ${s.last=='ok'?`<p class="fb ok">સાચું! ખામી: ${FAULTS[s.fault]}</p>`:s.last=='no'?`<p class="fb no">ફરી તપાસો. ટર્મિનલ વોલ્ટેજ ધ્યાનથી જુઓ.</p>`:''}
+  <button class="btn primary" data-act="new">નવી ખામી</button></div>`},
+ tasks:[
+  {t:'સામાન્ય મોડમાં હોર્ન વગાડો.',c:(s,c)=>s.mode=='n'&&c.sound},
+  {t:'ખામી શોધો મોડમાં એક ખામી સાચી ઓળખો.',c:s=>s.guesses>=1},
+  {t:'કુલ 4 ખામીઓ સાચી ઓળખો.',c:s=>s.guesses>=4}],
+ learn:`<h3>સમજો</h3><p><b>30</b> બેટરી સપ્લાય, <b>86</b> કોઇલ સપ્લાય, <b>85</b> કોઇલ અર્થ (બટન દ્વારા), <b>87</b> આઉટપુટ (હોર્ન).</p>
+ <p>બટનમાંથી માત્ર થોડા mA વહે છે અને હોર્નનો મોટો પ્રવાહ રિલે સંભાળે છે. તેથી બટનના કોન્ટેક્ટ બળતા નથી.</p>
+ <p><b>ટિપ:</b> મલ્ટિમીટરનો કાળો પ્રોબ અર્થ પર રાખી દરેક ટર્મિનલ માપો. મલ્ટિમીટર શીખવા <a href="https://ashish119055.github.io/Digital-Multimeter-Simulator/" target="_blank" rel="noopener">ડિજિટલ મલ્ટિમીટર સિમ્યુલેટર</a> ખોલો.</p>`};
+
+const GATES={AND:{f:(a,b)=>a&b,ex:'Y = A · B'},OR:{f:(a,b)=>a|b,ex:'Y = A + B'},NOT:{f:a=>1-a,ex:'Y = NOT A'},NAND:{f:(a,b)=>1-(a&b),ex:'Y = NOT (A · B)'},NOR:{f:(a,b)=>1-(a|b),ex:'Y = NOT (A + B)'},XOR:{f:(a,b)=>a^b,ex:'Y = A ⊕ B'}};
+M.logic={id:'logic',title:'લોજિક ગેટ',tag:'પ્રયોગ 6: ડિજિટલ લોજિક ગેટ',
+ state:{g:'AND',a:0,b:0},
+ calc:s=>({y:GATES[s.g].f(s.a,s.b)}),
+ ctrls:s=>seg('g',Object.keys(GATES).map(k=>[k,k]))+`<div class="toggles"><button class="tog" data-act="a" id="tA"></button><button class="tog" data-act="b" id="tB"></button></div>`,
+ act(a){const s=this.state;if(a=='a'||a=='b')s[a]=1-s[a]},
+ after(s){const A=$('#tA'),B=$('#tB');A.textContent='ઇનપુટ A = '+s.a;A.className='tog'+(s.a?' on':'');A.setAttribute('aria-pressed',!!s.a);B.textContent='ઇનપુટ B = '+s.b;B.className='tog'+(s.b?' on':'');B.setAttribute('aria-pressed',!!s.b);B.hidden=s.g=='NOT'},
+ svg(s,c){const one=s.g=='NOT',ya=one?110:95,g=s.g,y=c.y;
+  const box=(yy,v,l)=>`<rect x="12" y="${yy-10}" width="24" height="20" rx="4" class="comp" style="fill:${v?'var(--live)':'var(--pcb)'}"/>`+T(24,yy+5,v,'middle','silk b').replace('class="silk b"',`class="silk b" style="fill:${v?'#1b1400':'var(--silk)'}"`)+T(48,yy-6,l,'start','silk v');
+  let o=`<path class="trace${s.a?' on':''}" d="M36 ${ya}H152"/>`+box(ya,s.a,'A');
+  if(!one)o+=`<path class="trace${s.b?' on':''}" d="M36 125H152"/>`+box(125,s.b,'B');
+  const andP='M140 80H170A30 30 0 0 1 170 140H140Z',orP='M136 80Q160 80 176 90Q194 100 200 110Q194 120 176 130Q160 140 136 140Q152 110 136 80Z';
+  let body,outX=200,bub=0;
+  if(g=='AND'||g=='NAND')body=andP;else if(g=='NOT')body='M145 85L145 135L190 110Z';else body=orP;
+  if(g=='NAND'||g=='NOR'){bub=205;outX=210}if(g=='NOT'){bub=195;outX=200}
+  o+=`<path class="trace${y?' on':''}" d="M${outX} 110H276"/>`;
+  o+=`<path class="comp" d="${body}" style="fill:var(--pcb)"/>`;
+  if(g=='XOR')o+=`<path class="comp" d="M127 80Q143 110 127 140"/>`;
+  if(bub)o+=`<circle class="comp" cx="${bub}" cy="110" r="5" style="fill:var(--pcb)"/>`;
+  o+=T(g=='NOT'?160:166,114,g,'middle','silk b');
+  o+=`<circle cx="292" cy="110" r="30" fill="url(#ledg)" opacity="${y}"/><circle cx="292" cy="110" r="12" class="comp" style="fill:${y?'#FF4D3D':'var(--pcb)'}"/>`+T(292,146,'Y = '+y,'middle','silk b');
+  return svgW(o,170)},
+ meters:(s,c)=>[['ઇનપુટ A',String(s.a)],['ઇનપુટ B',s.g=='NOT'?'-':String(s.b)],['આઉટપુટ Y',String(c.y),c.y?'warn':''],['સૂત્ર',GATES[s.g].ex]],
+ formula:s=>({AND:'બધા ઇનપુટ 1 હોય ત્યારે જ આઉટપુટ 1.',OR:'કોઈ પણ એક ઇનપુટ 1 હોય તો આઉટપુટ 1.',NOT:'આઉટપુટ ઇનપુટથી ઉલટું.',NAND:'AND નું ઉલટું: બંને 1 હોય ત્યારે જ આઉટપુટ 0.',NOR:'OR નું ઉલટું: બંને 0 હોય ત્યારે જ આઉટપુટ 1.',XOR:'ઇનપુટ જુદા હોય ત્યારે આઉટપુટ 1.'})[s.g],
+ extra(s){const f=GATES[s.g].f,rows=s.g=='NOT'?[[0],[1]]:[[0,0],[0,1],[1,0],[1,1]];
+  return`<div class="panel tbl"><h3>ટ્રુથ ટેબલ: ${s.g}</h3><table><tr><th>A</th>${s.g=='NOT'?'':'<th>B</th>'}<th>Y</th></tr>${rows.map(r=>`<tr class="${r[0]==s.a&&(s.g=='NOT'||r[1]==s.b)?'cur':''}"><td>${r[0]}</td>${s.g=='NOT'?'':`<td>${r[1]}</td>`}<td>${f(r[0],r[1])}</td></tr>`).join('')}</table></div>`},
+ tasks:[
+  {t:'AND ગેટમાં આઉટપુટ 1 મેળવો.',c:(s,c)=>s.g=='AND'&&c.y==1},
+  {t:'NOR ગેટમાં આઉટપુટ 1 મેળવો.',c:(s,c)=>s.g=='NOR'&&c.y==1},
+  {t:'XOR ગેટમાં બંને ઇનપુટ 1 કરો અને આઉટપુટ જુઓ.',c:s=>s.g=='XOR'&&s.a&&s.b}],
+ learn:`<h3>સમજો</h3><p>1 એટલે વોલ્ટેજ છે (ON), 0 એટલે વોલ્ટેજ નથી (OFF). ગેટ ઇનપુટ જોઈને નિર્ણય લે છે.</p>
+ <p><b>વાહનમાં:</b> સ્ટાર્ટર ત્યારે જ ફરે જ્યારે ચાવી START પર હોય અને ગિયર ન્યૂટ્રલમાં હોય. આ AND લોજિક છે. ECU આવા હજારો નિર્ણય દર સેકન્ડે લે છે.</p>`};
+
+const QZ=[
+ ['ઓહમના નિયમ મુજબ વોલ્ટેજ V = ?',['I × R','I ÷ R','R ÷ I','I + R']],
+ ['12 V બેટરી સાથે 6 Ω રેઝિસ્ટર જોડ્યો છે. પ્રવાહ કેટલો?',['2 A','72 A','0.5 A','6 A']],
+ ['સિરીઝ જોડાણમાં કુલ અવરોધ કેટલો?',['બધા અવરોધનો સરવાળો','સૌથી નાના અવરોધથી ઓછો','બધાની સરેરાશ','હંમેશા શૂન્ય']],
+ ['પેરેલલ જોડાણમાં દરેક શાખા પરનો વોલ્ટેજ કેવો હોય?',['સરખો','જુદો જુદો','શૂન્ય','બમણો']],
+ ['LED ક્યારે પ્રકાશે છે?',['ફોરવર્ડ બાયસમાં','રિવર્સ બાયસમાં','બંને બાયસમાં','ક્યારેય નહીં']],
+ ['LED સાથે સિરીઝ રેઝિસ્ટર શા માટે જોડાય છે?',['પ્રવાહ મર્યાદિત કરવા','વોલ્ટેજ વધારવા','રંગ બદલવા','LED ઠંડી રાખવા પંખા તરીકે']],
+ ['NPN ટ્રાન્ઝિસ્ટર પૂરેપૂરો ON હોય તે અવસ્થા કઈ?',['સેચ્યુરેશન','કટ-ઓફ','એક્ટિવ','બ્રેકડાઉન']],
+ ['ઓટો રિલેમાં કોઇલના ટર્મિનલ કયા છે?',['85 અને 86','30 અને 87','30 અને 85','86 અને 87']],
+ ['બટન દબાવતાં ટર્મિનલ 87 પર 12 V છે પણ હોર્ન વાગતું નથી. ખામી ક્યાં?',['હોર્ન અથવા તેનું અર્થિંગ','ફ્યુઝ','રિલે કોઇલ','બેટરી']],
+ ['AND ગેટનું આઉટપુટ 1 ક્યારે થાય?',['બંને ઇનપુટ 1 હોય ત્યારે','કોઈ એક ઇનપુટ 1 હોય ત્યારે','બંને ઇનપુટ 0 હોય ત્યારે','હંમેશા']]];
+M.quiz={id:'quiz',title:'ક્વિઝ',custom:true,tasks:[],q:null,
+ start(){this.q={i:0,score:0,order:shuffle(QZ.map((x,i)=>i))};this.mk()},
+ mk(){const it=QZ[this.q.order[this.q.i]];this.q.opts=shuffle(it[1].map((t,j)=>({t,ok:j==0})));this.q.pick=null},
+ act(a,b){const q=this.q;if(a=='pick'&&q.pick==null){q.pick=+b.dataset.j;if(q.opts[q.pick].ok)q.score++}
+  if(a=='next'){q.i++;if(q.i<QZ.length)this.mk();else{const best=store.get('et-best',0);if(q.score>best)store.set('et-best',q.score)}}
+  if(a=='restart')this.start()},
+ render(){if(!this.q)this.start();const q=this.q,box=$('#stage'),N=QZ.length;
+  if(q.i>=N){const best=store.get('et-best',0);box.innerHTML=`<div class="panel quiz"><h2>પરિણામ</h2><p class="score">${q.score} / ${N}</p><p>${q.score>=9?'ઉત્તમ! તમે સર્કિટના માસ્ટર છો.':q.score>=6?'સારું! નબળા વિષયના પ્રયોગ ફરી કરો.':'પ્રયોગો ફરી કરો અને પછી ક્વિઝ આપો.'}</p><p style="color:var(--muted)">શ્રેષ્ઠ સ્કોર: ${best} / ${N}</p><button class="primary" data-act="restart">ફરી ક્વિઝ આપો</button></div>`;return}
+  const it=QZ[q.order[q.i]],p=q.pick!=null;
+  box.innerHTML=`<div class="panel quiz"><div class="qbar"><span style="width:${q.i/N*100}%"></span></div><p class="qn">પ્રશ્ન ${q.i+1} / ${N}</p><h2>${it[0]}</h2>
+  <div class="opts">${q.opts.map((o,j)=>`<button class="opt ${p?(o.ok?'right':(q.pick==j?'wrong':'')):''}" data-act="pick" data-j="${j}" ${p?'disabled':''}>${o.t}</button>`).join('')}</div>
+  ${p?`<p class="fb ${q.opts[q.pick].ok?'ok':'no'}">${q.opts[q.pick].ok?'સાચો જવાબ!':'ખોટો. સાચો જવાબ લીલા રંગમાં છે.'}</p><button class="primary" data-act="next">${q.i+1<N?'આગળનો પ્રશ્ન':'પરિણામ જુઓ'}</button>`:''}</div>`}};
+
+/* ---------- UI helpers ---------- */
+function slider(k,label,min,max,step,s){return`<div class="ctrl"><label for="${k}"><span>${label}</span><output id="${k}o"></output></label><input type="range" id="${k}" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"></div>`}
+function seg(k,opts){return`<div class="seg" role="group" data-seg="${k}">${opts.map(([v,l])=>`<button type="button" data-v="${v}">${l}</button>`).join('')}</div>`}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* horn audio */
+let actx=null,hn=null;
+function ensureAudio(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(actx&&actx.state=='suspended')actx.resume()}
+function hornOn(){if(!actx||hn)return;const g=actx.createGain();g.gain.value=0.05;g.connect(actx.destination);const a=actx.createOscillator(),b=actx.createOscillator();a.type=b.type='square';a.frequency.value=410;b.frequency.value=515;a.connect(g);b.connect(g);a.start();b.start();hn={a,b,g}}
+function hornOff(){if(!hn)return;try{hn.a.stop();hn.b.stop();hn.g.disconnect()}catch(e){}hn=null}
+
+/* ---------- core ---------- */
+const ORDER=['ohm','sp','led','tr','relay','logic','quiz'];
+const TOTAL=ORDER.reduce((n,k)=>n+M[k].tasks.length,0);
+let cur=null;
+function renderTabs(){$('#tabs').innerHTML=ORDER.map(k=>{const m=M[k],all=m.tasks.length&&m.tasks.every((t,i)=>done[k+i]);return`<button class="tab" role="tab" data-tab="${k}" aria-selected="${cur&&cur.id==k}">${m.title}${all?'<span class="ok">✓</span>':''}</button>`}).join('');
+ const n=Object.keys(done).length;$('#ptext').textContent=`પ્રગતિ: ${n} / ${TOTAL} ટાસ્ક`;$('#pfill').style.width=(n/TOTAL*100)+'%'}
+function show(id){hornOff();cur=M[id];if(cur.state)cur.state.pressed=0;renderTabs();
+ if(cur.custom){cur.render();return}
+ $('#stage').innerHTML=`<div class="layout"><div class="col"><div class="board"><span class="tag">${cur.tag}</span><div id="svgbox"></div></div><div class="meters" id="meters"></div><div class="formula" id="formula"></div><div id="extra"></div></div>
+ <div class="col"><div class="panel" id="ctrls">${cur.ctrls(cur.state)}</div><div class="panel"><h3>ટાસ્ક</h3><ul class="tasks" id="tasks"></ul></div><div class="panel learn">${cur.learn}</div></div></div>`;
+ cur.bind&&cur.bind();update()}
+function update(){const m=cur;if(m.custom){m.render();return}const s=m.state,c=m.calc(s);
+ $('#svgbox').innerHTML=m.svg(s,c);
+ $('#meters').innerHTML=m.meters(s,c).map(([l,v,cl])=>`<div class="meter ${cl||''}"><small>${l}</small><b>${v}</b></div>`).join('');
+ $('#formula').textContent=m.formula(s,c);
+ $('#extra').innerHTML=m.extra?m.extra(s,c):'';
+ document.querySelectorAll('[data-seg]').forEach(g=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v==String(s[g.dataset.seg])))));
+ document.querySelectorAll('input[type=range][data-k]').forEach(r=>{if(+r.value!==s[r.dataset.k])r.value=s[r.dataset.k];const o=document.getElementById(r.id+'o');if(o)o.textContent=m.out(r.dataset.k,s)});
+ m.after&&m.after(s,c);
+ let changed=0;m.tasks.forEach((t,i)=>{if(!done[m.id+i]&&t.c(s,c)){done[m.id+i]=1;changed=1;toast('શાબાશ! ટાસ્ક પૂર્ણ ✓')}});
+ if(changed){store.set('et-done',done);renderTabs()}
+ $('#tasks').innerHTML=m.tasks.map((t,i)=>`<li class="${done[m.id+i]?'done':''}">${t.t}</li>`).join('')}
+
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
+const st=$('#stage');
+st.addEventListener('input',e=>{const r=e.target;if(r.matches('input[type=range][data-k]')){cur.state[r.dataset.k]=parseFloat(r.value);update()}});
+st.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.id=='hornBtn')return;
+ const g=b.closest('[data-seg]');if(g){const v=b.dataset.v;cur.state[g.dataset.seg]=isNaN(+v)?v:+v;cur.onSeg&&cur.onSeg(g.dataset.seg);update();return}
+ if(b.dataset.set){const[k,v]=b.dataset.set.split(':');cur.state[k]=+v;update();return}
+ if(b.dataset.act){cur.act(b.dataset.act,b);update()}});
+
+/* current flow animation */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;let last=0;
+function tick(t){const dt=Math.min(60,t-last)/1000;last=t;
+ if(!reduce)document.querySelectorAll('.flow').forEach(p=>{const s=+p.dataset.s;if(!s)return;const k=p.dataset.k;flowOff[k]=((flowOff[k]||0)-s*dt)%1400;p.setAttribute('stroke-dashoffset',flowOff[k])});
+ requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hornOff()});
+show('ohm');
+</script>
+</body>
+</html>
