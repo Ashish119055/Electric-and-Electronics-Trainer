@@ -36,3 +36,17 @@ node blogger/build.js blogger/mpfi-engine-source.html blogger/mpfi-engine-blogge
 ```
 
 `build.js` works for any single-file page (e.g. this repo's `index.html`); pass a different embed id per post.
+
+## Publishing through the Blogger API (optional)
+
+`publish.js` posts the snippet without opening Blogger, given a token with the
+`https://www.googleapis.com/auth/blogger` scope in environment variables:
+
+```sh
+BLOGGER_BLOG_URL=https://<your-blog>.blogspot.com \
+BLOGGER_CLIENT_ID=... BLOGGER_CLIENT_SECRET=... BLOGGER_REFRESH_TOKEN=... \
+node blogger/publish.js blogger/mpfi-engine-blogger-post.html "MPFI પેટ્રોલ એન્જિન – 3D વર્કિંગ મોડલ"
+```
+
+Add `--draft` to create a draft instead of publishing. `BLOGGER_ACCESS_TOKEN` can replace the
+three OAuth client variables for a one-off run (access tokens expire after an hour).
