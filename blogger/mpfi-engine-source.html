@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MPFI પેટ્રોલ એન્જિન – 3D વર્કિંગ મોડલ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E8EC; --panel:#F7F8FA; --ink:#1F2A33; --muted:#566370; --line:#C6CED5;
+  --copper:#B8622E; --heat:#D2382A; --air:#3E8FD0; --cool:#2B7BC4; --oil:#C98A1A; --fuel:#C9A400; --ign:#7B5CE0; --exh:#B4552F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#182027; --panel:#222C35; --ink:#E7ECEF; --muted:#9AA7B2; --line:#34414C;}
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Hind Vadodara","Noto Sans Gujarati","Shruti",sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:0 12px 40px}
+header{padding:18px 0 8px}
+h1{font-size:clamp(25px,6.5vw,38px);line-height:1.15;margin:0;font-weight:700}
+h1 small{display:block;font-size:.45em;font-weight:500;color:var(--copper);margin-top:6px}
+h2{font-size:22px;margin:26px 0 10px;padding-left:10px;border-left:5px solid var(--copper)}
+.modes{display:flex;gap:6px;overflow-x:auto;padding:6px 0 10px}
+.modes button{flex:none;font:inherit;font-weight:700;font-size:15px;padding:7px 13px;border-radius:20px;
+  border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.modes button.on{color:#fff;border-color:transparent;background:var(--ink)}
+.modes button.on[data-m="core"]{background:#5F6B75}
+.modes button.on[data-m="air"]{background:var(--air)}
+.modes button.on[data-m="fuel"]{background:var(--fuel)}
+.modes button.on[data-m="ign"]{background:var(--ign)}
+.modes button.on[data-m="exh"]{background:var(--exh)}
+.modes button.on[data-m="cool"]{background:var(--cool)}
+.modes button.on[data-m="lube"]{background:var(--oil)}
+#stage{position:relative;height:min(68vh,600px);min-height:380px;border-radius:14px;overflow:hidden;
+  background:#262D33;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage canvas{display:block;width:100%;height:100%}
+#labels{position:absolute;inset:0;pointer-events:none}
+.lbl{position:absolute;min-width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:12px;padding:0 4px;
+  border:2px solid #fff;background:rgba(30,38,46,.85);color:#fff;font:700 12px/20px "Hind Vadodara",sans-serif;
+  text-align:center;pointer-events:auto;cursor:pointer;display:none}
+.lbl.vis{display:block}
+.lbl.sel{background:var(--copper)}
+.hide-labels .lbl.vis{display:none}
+#badge{position:absolute;left:10px;top:10px;background:rgba(20,26,32,.8);color:#fff;padding:6px 11px;border-radius:10px;
+  font-size:14px;line-height:1.35;pointer-events:none;max-width:70%}
+#badge b{display:block;font-size:17px}
+#hint{position:absolute;right:10px;bottom:8px;color:rgba(255,255,255,.55);font-size:12px;pointer-events:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:700;font-size:16px;padding:8px 14px;border-radius:10px;border:0;
+  background:var(--copper);color:#fff;cursor:pointer}
+.controls button.sec{background:var(--panel);color:var(--ink);border:1.5px solid var(--line)}
+.controls label{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600}
+.speed{flex:1 1 160px;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+input[type=range]{flex:1;accent-color:var(--copper)}
+button:focus-visible{outline:3px solid var(--air);outline-offset:2px}
+.cyls{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.cyl{padding:6px 4px;border-radius:10px;text-align:center;font-weight:700;font-size:14px;line-height:1.25;color:#fff}
+.cyl span{display:block;font-weight:500;font-size:12px;opacity:.9}
+.s0{background:#5FA83C}.s1{background:#C9822E}.s2{background:var(--heat)}.s3{background:#6B747C}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px}
+.panel h3{margin:0 0 4px;font-size:19px}
+.panel p{margin:0}
+#info{border-color:var(--copper)}
+#info[hidden]{display:none}
+.flowline{margin-top:6px;font-weight:600;color:var(--muted);font-size:15px}
+.group h3{font-size:18px;margin:16px 0 6px}
+ol.parts{margin:0;padding:0;list-style:none}
+ol.parts li{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+ol.parts li:last-child{border-bottom:0}
+ol.parts .n{width:32px;height:28px;border-radius:14px;background:var(--ink);color:var(--bg);font-weight:700;display:grid;place-items:center;font-size:13px}
+ol.parts b{display:block}
+ol.parts span{color:var(--muted);font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:14px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+footer{margin-top:30px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>MPFI પેટ્રોલ એન્જિન – 3D વર્કિંગ મોડલ<small>મલ્ટી પોઇન્ટ ફ્યુઅલ ઇન્જેક્શન – 4 સિલિન્ડર – ફાયરીંગ ઓર્ડર 1-3-4-2</small></h1>
+</header>
+<div class="modes" id="modes">
+  <button data-m="all" class="on">બધું</button>
+  <button data-m="core">મિકેનિકલ</button>
+  <button data-m="air">એર ઇન્ટેક</button>
+  <button data-m="fuel">ફ્યુઅલ (MPFI)</button>
+  <button data-m="ign">ઇગ્નીશન</button>
+  <button data-m="exh">એક્ઝોસ્ટ</button>
+  <button data-m="cool">કૂલિંગ</button>
+  <button data-m="lube">લુબ્રિકેશન</button>
+</div>
+<div id="stage">
+  <div id="labels"></div>
+  <div id="badge"><b id="bTitle">ક્રેન્ક 0°</b><span id="bEvent"></span></div>
+  <div id="hint">ડ્રેગ = ફેરવો · પિંચ = ઝૂમ</div>
+</div>
+<div class="controls">
+  <button id="play">વિરામ</button>
+  <button class="sec" id="back">−15°</button>
+  <button class="sec" id="fwd">+15°</button>
+  <div class="speed">ઝડપ <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.5"></div>
+  <label><input type="checkbox" id="cold"> ઠંડું એન્જિન</label>
+  <label><input type="checkbox" id="showL" checked> નંબર</label>
+</div>
+<div class="cyls" id="cyls"></div>
+<div class="legend">
+  <span><i style="background:#8FD3FF"></i>હવા</span>
+  <span><i style="background:#B6E27A"></i>હવા + પેટ્રોલ મિશ્રણ</span>
+  <span><i style="background:#F3D23A"></i>પેટ્રોલ</span>
+  <span><i style="background:#B07850"></i>ઝેરી એક્ઝોસ્ટ</span>
+  <span><i style="background:#D6DEE4"></i>શુદ્ધ એક્ઝોસ્ટ</span>
+  <span><i style="background:#3E8FD0"></i>ઠંડું કૂલન્ટ</span>
+  <span><i style="background:#E0402A"></i>ગરમ કૂલન્ટ</span>
+  <span><i style="background:#E8A317"></i>એન્જિન ઓઇલ</span>
+</div>
+<div class="panel"><h3 id="mTitle"></h3><p id="mText"></p><p class="flowline" id="mFlow"></p></div>
+<div class="panel" id="info" hidden><h3 id="iTitle"></h3><p id="iText"></p></div>
+<h2>ભાગો અને તેનું કાર્ય</h2>
+<div class="panel" id="partList"></div>
+<footer>Government ITI Maninagar – Mechanic Diesel</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const V3=THREE.Vector3, rad=d=>d*Math.PI/180, PI=Math.PI;
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x262D33);scene.fog=new THREE.Fog(0x262D33,28,75);
+const camera=new THREE.PerspectiveCamera(38,1,0.1,200);
+
+/* environment */
+(function(){
+  const c=document.createElement('canvas');c.width=4;c.height=128;const g=c.getContext('2d');
+  if(g){const gr=g.createLinearGradient(0,0,0,128);gr.addColorStop(0,'#f2f4f6');gr.addColorStop(.5,'#8d969e');gr.addColorStop(1,'#2a2f34');g.fillStyle=gr;g.fillRect(0,0,4,128);}
+  const es=new THREE.Scene();
+  es.add(new THREE.Mesh(new THREE.SphereGeometry(10,32,16),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),side:THREE.BackSide})));
+  const pm=new THREE.PMREMGenerator(renderer);scene.environment=pm.fromScene(es,0.04).texture;
+})();
+scene.add(new THREE.HemisphereLight(0xffffff,0x3a3a3a,0.5));
+const d1=new THREE.DirectionalLight(0xffffff,0.9);d1.position.set(5,14,9);d1.castShadow=true;
+d1.shadow.mapSize.set(1024,1024);Object.assign(d1.shadow.camera,{left:-13,right:13,top:13,bottom:-13,near:1,far:45});d1.shadow.bias=-0.0006;scene.add(d1);
+const d2=new THREE.DirectionalLight(0xbfd8ff,0.3);d2.position.set(-8,4,-6);scene.add(d2);
+const flash=new THREE.PointLight(0xff7a2a,0,7);scene.add(flash);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshLambertMaterial({color:0x22282D}));
+floor.rotation.x=-PI/2;floor.position.y=-2.75;floor.receiveShadow=true;scene.add(floor);
+
+/* registry */
+const SYSN=['core','air','fuel','ign','exh','cool','lube'];
+const REG={};SYSN.forEach(s=>REG[s]=[]);
+function reg(s,m){m.userData={o:m.opacity,t:m.transparent,d:m.depthWrite};REG[s].push(m);return m}
+const MS=(s,color,o={})=>reg(s,new THREE.MeshStandardMaterial(Object.assign({color,metalness:.55,roughness:.42},o)));
+const MB=(s,color,o={})=>reg(s,new THREE.MeshBasicMaterial(Object.assign({color},o)));
+const ML=(s,color,o={})=>reg(s,new THREE.LineBasicMaterial(Object.assign({color},o)));
+const T=(op)=>({transparent:true,opacity:op,depthWrite:false});
+
+/* helpers */
+function mesh(geo,mat,p=[0,0,0],parent=scene){const m=new THREE.Mesh(geo,mat);m.position.set(p[0],p[1],p[2]);parent.add(m);return m}
+function cyl(r,len,mat,p,axis='y',parent=scene,seg=24,r2){const m=mesh(new THREE.CylinderGeometry(r,r2===undefined?r:r2,len,seg),mat,p,parent);
+  if(axis==='x')m.rotation.z=PI/2;if(axis==='z')m.rotation.x=PI/2;return m}
+function box(w,h,d,mat,p,parent=scene){return mesh(new THREE.BoxGeometry(w,h,d),mat,p,parent)}
+function crv(pts,closed=false){return new THREE.CatmullRomCurve3(pts.map(p=>new V3(p[0],p[1],p[2])),closed,'centripetal')}
+function tube(c,r,mat,seg=80,rs=10){return mesh(new THREE.TubeGeometry(c,seg,r,rs,false),mat)}
+function cylBetween(a,b,r,mat,r2){const d=new V3().subVectors(b,a);const m=new THREE.Mesh(new THREE.CylinderGeometry(r2===undefined?r:r2,r,d.length(),14),mat);
+  m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new V3(0,1,0),d.normalize());scene.add(m);return m}
+function ghost(s,w,h,d,p,color,op){const m=box(w,h,d,MS(s,color,Object.assign({roughness:.6,metalness:.2},T(op))),p);
+  m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),ML(s,0xdfe6ea,{transparent:true,opacity:.45})));return m}
+function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');if(g)draw(g,w,h);
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
+function pulley(s,r,p,mat,grooves=3,parent=scene){const g=new THREE.Group();g.position.set(p[0],p[1],p[2]);parent.add(g);
+  cyl(r,0.16,mat,[0,0,0],'x',g,32);for(let i=0;i<grooves;i++){const t=mesh(new THREE.TorusGeometry(r,0.018,6,32),MS(s,0x2b3036),[(-0.05+i*0.05),0,0],g);t.rotation.y=PI/2}
+  box(0.18,r*1.6,0.05,MS(s,0xE8B430),[0,0,0],g);return g}
+function sprocket(s,r,p,teeth,mat,parent=scene){const g=new THREE.Group();g.position.set(p[0],p[1],p[2]);parent.add(g);
+  cyl(r,0.14,mat,[0,0,0],'x',g,40);const im=new THREE.InstancedMesh(new THREE.BoxGeometry(0.14,0.09,0.07),mat,teeth),dm=new THREE.Object3D();
+  for(let k=0;k<teeth;k++){const a=k/teeth*PI*2;dm.position.set(0,(r+0.03)*Math.cos(a),(r+0.03)*Math.sin(a));dm.rotation.set(a,0,0);dm.updateMatrix();im.setMatrixAt(k,dm.matrix)}
+  g.add(im);box(0.16,r*1.5,0.05,MS(s,0xE8B430),[0.01,0,0],g);return g}
+
+/* flow texture (pulses) */
+function pulseTex(vertical){const w=vertical?4:64,h=vertical?64:4,d=new Uint8Array(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const q=vertical?y/h:x/w;const p=Math.pow(0.5+0.5*Math.cos(q*PI*2),3);
+    const o=(y*w+x)*4;d[o]=d[o+1]=d[o+2]=Math.round(255*(0.7+0.3*p));d[o+3]=Math.round(255*(0.28+0.72*p))}
+  const t=new THREE.DataTexture(d,w,h,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=t.minFilter=THREE.LinearFilter;t.needsUpdate=true;return t}
+
+/* constants */
+const CX=[-2.7,-0.9,0.9,2.7], OFF=[0,540,180,360], JX=[-3.6,-1.8,0,1.8,3.6];
+const R=0.6, L=2.0, HEAD=3.35, CAMY=4.95, LIFT=0.25;
+
+/* materials */
+const iron=MS('core',0x4F555B,{roughness:.7,metalness:.35});
+const steel=MS('core',0xA7B0B8,{metalness:.8,roughness:.28});
+const dsteel=MS('core',0x5A6168,{metalness:.7,roughness:.35});
+const alu=MS('core',0xC3CAD0,{metalness:.6,roughness:.32});
+const mCut=MS('core',0xB8C2CA,{roughness:.6,metalness:.1});
+const springM=MS('core',0x2D6FB3,{metalness:.4});
+
+/* block, head, sump */
+ghost('core',7.8,4.35,2.0,[0,1.175,0],0x6C747B,.13);
+ghost('core',7.8,2.05,1.9,[0,4.375,0],0xB8C0C6,.11);
+ghost('lube',7.4,1.1,1.9,[0,-1.55,0],0x7A828A,.18);
+box(7.2,0.5,1.8,MS('lube',0xC98A1A,Object.assign({roughness:.15,metalness:0},T(.75))),[0,-1.85,0]);
+(function(){const n=20,im=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08,0.08,0.07,6),dsteel,n),dm=new THREE.Object3D();
+  for(let k=0;k<n;k++){dm.position.set(-3.6+(k%10)*0.8,5.43,k<10?0.82:-0.82);dm.updateMatrix();im.setMatrixAt(k,dm.matrix)}scene.add(im)})();
+CX.forEach(cx=>{
+  const half=(r,h,mat,y)=>mesh(new THREE.CylinderGeometry(r,r,h,40,1,true,PI/2,PI),mat,[cx,y,0]);
+  half(0.76,2.45,MS('core',0x6F7B85,{roughness:.6,side:THREE.DoubleSide}),2.125);
+  half(0.86,2.45,MS('core',0x6F7B85,{roughness:.6,side:THREE.DoubleSide}),2.125);
+  half(0.95,2.0,MS('cool',0x2E86DE,Object.assign({roughness:.2,metalness:0,side:THREE.DoubleSide},T(.3))),2.3);
+  [cx-0.81,cx+0.81].forEach(x=>box(0.1,2.45,0.02,mCut,[x,2.125,0]));
+});
+
+/* crankshaft */
+const crank=new THREE.Group();scene.add(crank);
+JX.forEach(x=>cyl(0.26,0.4,steel,[x,0,0],'x',crank));
+function cwGeo(down){const s=new THREE.Shape();const a0=down?PI:0;s.moveTo(0,0);
+  for(let i=0;i<=24;i++){const a=a0+i/24*PI;s.lineTo(0.75*Math.cos(a),0.75*Math.sin(a))}s.lineTo(0,0);
+  const g=new THREE.ExtrudeGeometry(s,{depth:0.12,bevelEnabled:false});g.translate(0,0,-0.06);g.rotateY(PI/2);return g}
+CX.forEach((cx,i)=>{const pa=rad(-OFF[i]);const py=R*Math.cos(pa),pz=R*Math.sin(pa);
+  cyl(0.2,0.42,steel,[cx,py,pz],'x',crank);
+  [cx-0.29,cx+0.29].forEach(wx=>{box(0.12,R+0.5,0.55,steel,[wx,py/2,0],crank);mesh(cwGeo(py>0),dsteel,[wx,0,0],crank)});
+});
+cyl(0.18,1.0,steel,[-4.35,0,0],'x',crank);
+cyl(0.3,0.5,steel,[3.95,0,0],'x',crank);
+cyl(1.4,0.22,iron,[4.3,0,0],'x',crank,48);
+(function(){const n=80,im=new THREE.InstancedMesh(new THREE.BoxGeometry(0.2,0.09,0.06),dsteel,n),d=new THREE.Object3D();
+  for(let k=0;k<n;k++){const a=k/n*PI*2;d.position.set(4.3,1.45*Math.cos(a),1.45*Math.sin(a));d.rotation.set(a,0,0);d.updateMatrix();im.setMatrixAt(k,d.matrix)}im.castShadow=true;crank.add(im)})();
+box(0.24,0.4,0.12,MS('core',0xE8B430),[4.3,1.0,0],crank);
+sprocket('core',0.32,[-4.45,0,0],18,MS('core',0x2b3036),crank);
+pulley('core',0.45,[-4.85,0,0],MS('core',0x3a4046),4,crank);
+
+/* rods, pistons, gas */
+const rods=[],pistons=[],gases=[],gasMats=[],pY=[0,0,0,0];
+CX.forEach(cx=>{
+  const r=new THREE.Group();scene.add(r);rods.push(r);
+  box(0.16,L,0.22,alu,[0,0,0],r);cyl(0.28,0.2,alu,[0,-L/2,0],'x',r);cyl(0.16,0.2,alu,[0,L/2,0],'x',r);
+  const p=new THREE.Group();p.position.x=cx;scene.add(p);pistons.push(p);
+  cyl(0.72,0.9,alu,[0,0.15,0],'y',p,40);
+  [[-0.38,0.2],[0.38,0.2]].forEach(([x,rr])=>cyl(rr,0.03,MS('core',0x9aa2a9),[x,0.6,0],'y',p,24));
+  [0.5,0.4,0.28].forEach(y=>{const t=mesh(new THREE.TorusGeometry(0.722,0.025,8,40),MS('core',0x222222),[0,y,0],p);t.rotation.x=PI/2});
+  cyl(0.12,1.2,steel,[0,0,0],'x',p);
+  const gm=new THREE.MeshStandardMaterial({color:0xb6e27a,transparent:true,opacity:.45,depthWrite:false,roughness:1,metalness:0,emissive:0x000000});gasMats.push(gm);
+  const gg=new THREE.CylinderGeometry(0.7,0.7,1,32);gg.translate(0,0.5,0);gases.push(mesh(gg,gm,[cx,0,0]));
+});
+
+/* valve train */
+class Helix extends THREE.Curve{constructor(r,n){super();this.r=r;this.n=n}
+  getPoint(t,o=new V3()){const a=t*PI*2*this.n;return o.set(this.r*Math.cos(a),t,this.r*Math.sin(a))}}
+const springGeo=new THREE.TubeGeometry(new Helix(0.13,7),140,0.022,6);
+function camGeo(){const s=new THREE.Shape();const N=72;
+  for(let i=0;i<=N;i++){const a=i/N*PI*2;const r=0.3+LIFT*Math.pow(Math.max(0,Math.cos(a+PI/2)),2);
+    i?s.lineTo(r*Math.cos(a),r*Math.sin(a)):s.moveTo(r*Math.cos(a),r*Math.sin(a))}
+  const g=new THREE.ExtrudeGeometry(s,{depth:0.18,bevelEnabled:false});g.translate(0,0,-0.09);g.rotateY(PI/2);return g}
+const cg=camGeo(), camM=MS('core',0x8C969F,{metalness:.8,roughness:.25});
+const valves=[];
+function makeValve(x){const g=new THREE.Group();scene.add(g);
+  const st=new THREE.CylinderGeometry(0.045,0.045,1.27,10);st.translate(0,0.635,0);mesh(st,steel,[0,0,0],g);
+  cyl(0.2,0.07,steel,[0,0.035,0],'y',g,24,0.23);g.position.x=x;
+  const sp=mesh(springGeo,springM,[x,4.0,0]);const rt=cyl(0.16,0.04,dsteel,[x,4.5,0]);
+  const lobe=mesh(cg,camM,[x,CAMY,0]);return {g,sp,rt,lobe}}
+CX.forEach(cx=>valves.push({in:makeValve(cx-0.38),ex:makeValve(cx+0.38)}));
+cyl(0.1,8.4,steel,[-0.4,CAMY,0],'x');
+const camSpr=sprocket('core',0.6,[-4.45,CAMY,0],34,MS('core',0x2b3036));
+const idler=pulley('core',0.2,[-4.45,2.3,0.55],steel,0);
+const tens=pulley('core',0.22,[-4.45,2.6,-0.62],steel,0);
+
+/* belts */
+function hullBelt(xp,pul){const pts=[];pul.forEach(([y,z,r])=>{for(let i=0;i<40;i++){const a=i/40*PI*2;pts.push([y+(r+0.06)*Math.cos(a),z+(r+0.06)*Math.sin(a)])}});
+  pts.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],up=[];for(const p of pts){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+  for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+  up.pop();lo.pop();const h=lo.concat(up).map(([y,z])=>new V3(xp,y,z));
+  const cp=new THREE.CurvePath();for(let i=0;i<h.length;i++)cp.add(new THREE.LineCurve3(h[i],h[(i+1)%h.length]));return cp}
+function beltTex(){return canvasTex(32,8,(g)=>{g.fillStyle='#151719';g.fillRect(0,0,32,8);g.fillStyle='#4a5056';g.fillRect(0,0,10,8)})}
+const belts=[];
+function makeBelt(xp,pul){const c=hullBelt(xp,pul);const tx=beltTex();tx.repeat.set(c.getLength()/0.14,1);
+  mesh(new THREE.TubeGeometry(c,400,0.065,4,true),MS('core',0xffffff,{map:tx,roughness:.9,metalness:0}));belts.push(tx)}
+makeBelt(-4.45,[[0,0,0.32],[CAMY,0,0.6],[2.3,0.55,0.2],[2.6,-0.62,0.22]]);
+makeBelt(-4.85,[[0,0,0.45],[1.6,0.6,0.35],[2.7,1.7,0.22]]);
+
+/* alternator, starter */
+const altG=new THREE.Group();altG.position.set(-4.2,2.7,1.7);scene.add(altG);
+cyl(0.45,0.65,MS('core',0xA9B0B6,{metalness:.6}),[0,0,0],'x',altG,28);
+[-0.2,0,0.2].forEach(x=>{const t=mesh(new THREE.TorusGeometry(0.46,0.03,6,28),dsteel,[x,0,0],altG);t.rotation.y=PI/2});
+const altPul=pulley('core',0.22,[-4.85,2.7,1.7],MS('core',0x3a4046),3);
+const wpPul=pulley('cool',0.35,[-4.85,1.6,0.6],MS('cool',0x3a4046),3);
+cyl(0.05,0.75,steel,[-4.5,1.6,0.6],'x');
+cyl(0.32,1.0,MS('core',0x2a2d31),[3.75,-0.75,1.3],'x',scene,24);
+cyl(0.15,0.7,MS('core',0x8c949b),[3.75,-0.33,1.3],'x',scene,16);
+
+/* ---------- STREAMS (continuous flow) ---------- */
+const streams=[];const C=h=>new THREE.Color(h);
+function stream(sys,curve,r,c1,c2,spd,active,pipe){
+  if(pipe)tube(curve,pipe[0],pipe[1],Math.max(20,Math.round(curve.getLength()*12)),12);
+  const len=curve.getLength(),n=c1.equals(c2)?1:6,parts=[];
+  for(let k=0;k<n;k++){const a=k/n,b=(k+1)/n;let sc=curve;
+    if(n>1){const pts=[];for(let j=0;j<=16;j++)pts.push(curve.getPointAt(a+(b-a)*j/16));sc=new THREE.CatmullRomCurve3(pts,false,'centripetal')}
+    const sl=len*(b-a),g=new THREE.TubeGeometry(sc,Math.max(8,Math.round(sl*14)),r,8,false);
+    const tex=pulseTex(false);tex.repeat.set(sl/0.55,1);
+    const m=new THREE.MeshBasicMaterial({color:c1.clone().lerp(c2,(a+b)/2),map:tex,transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending});
+    const ms=mesh(g,m);ms.renderOrder=10;parts.push({m,tex,ms,start:len*a/0.55})}
+  const s={sys,parts,spd,active:active||(()=>true),level:1,modeOn:true,v:false,off:0};streams.push(s);return s}
+function sheet(sys,w,h,p,c1,c2,spd,active){const n=6,bh=h/n,parts=[];
+  for(let k=0;k<n;k++){const g=new THREE.PlaneGeometry(w,bh);g.rotateY(PI/2);
+    const tex=pulseTex(true);tex.repeat.set(6,bh/0.55);
+    const m=new THREE.MeshBasicMaterial({color:c1.clone().lerp(c2,(k+0.5)/n),map:tex,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending});
+    const ms=mesh(g,m,[p[0],p[1]+h/2-(k+0.5)*bh,p[2]]);ms.renderOrder=10;parts.push({m,tex,ms,start:-(k+1)*bh/0.55})}
+  const s={sys,parts,spd,active:active||(()=>true),level:1,modeOn:true,v:true,off:0};streams.push(s);return s}
+const cAir=C(0x8FD3FF),cMix=C(0xB6E27A),cFuel=C(0xF3D23A),cHot=C(0xE0402A),cCold=C(0x3E8FD0),cWarm=C(0xF07A2A),cOil=C(0xE8A317),
+      cExHot=C(0xD06A40),cDirty=C(0xB07850),cClean=C(0xD6DEE4);
+
+/* ---------- AIR INTAKE ---------- */
+const lIn=[0,0,0,0],lEx=[0,0,0,0];
+box(1.2,0.6,1.0,MS('air',0x1f2225,{roughness:.7,metalness:0}),[6.2,5.3,-2.0]);
+box(1.22,0.08,1.02,MS('air',0x3a3f44,{roughness:.6,metalness:0}),[6.2,5.3,-2.0]);
+const duct=crv([[5.6,5.3,-2.0],[5.0,5.2,-2.0],[4.1,5.0,-2.0]]);
+box(0.3,0.2,0.22,MS('air',0x1f2225),[5.0,5.45,-2.0]);
+const tb=cyl(0.3,0.46,MS('air',0xC3CAD0,Object.assign({metalness:.6,roughness:.3},T(.55))),[3.85,5.0,-2.0],'x',scene,28);
+const butterfly=cyl(0.27,0.025,MS('air',0x9aa2a9,{metalness:.8}),[3.85,5.0,-2.0],'y',scene,28);butterfly.rotation.z=PI/2-rad(55);
+cyl(0.03,0.7,steel,[3.85,5.0,-2.0],'z');
+box(0.22,0.26,0.1,MS('air',0x1f2225),[3.85,5.0,-2.38]);
+const plenumC=crv([[3.6,5.0,-2.0],[-3.4,5.0,-2.0]]);
+tube(plenumC,0.36,MS('air',0xB9C1C7,Object.assign({metalness:.6,roughness:.35},T(.45))),20,20);
+cyl(0.1,0.15,MS('air',0x1f2225),[-3.0,5.42,-2.0]);
+stream('air',duct,0.11,cAir,cAir,1.6,null,[0.22,MS('air',0x1e2124,Object.assign({roughness:.8,metalness:0},T(.5)))]);
+stream('air',crv([[4.1,5.0,-2.0],[3.6,5.0,-2.0]]),0.11,cAir,cAir,1.6);
+stream('air',plenumC,0.16,cAir,cAir,1.4);
+const runners=[];
+CX.forEach((cx,i)=>{const vx=cx-0.38;const c=crv([[vx,5.0,-2.0],[vx,5.0,-1.35],[vx,4.4,-0.85],[vx,3.7,-0.25],[vx,3.42,0]]);
+  tube(c,0.16,MS('air',0xB9C1C7,Object.assign({metalness:.5,roughness:.35,side:THREE.DoubleSide},T(.35))),40);
+  runners.push(stream('air',c,0.09,cAir,cMix,1.4,()=>lIn[i]>0.02))});
+
+/* ---------- FUEL (MPFI) ---------- */
+const injActive=[0,0,0,0],sprays=[],injWires=[],coilWires=[];
+const fPipe=MS('fuel',0xC9CFD4,Object.assign({metalness:.8,roughness:.25},T(.45)));
+const blackP=MS('fuel',0x1f2225,{roughness:.6,metalness:.1});
+box(2.0,1.0,1.4,MS('fuel',0x3A4046,Object.assign({roughness:.6},T(.5))),[6.9,-1.2,-2.6]);
+cyl(0.15,0.75,MS('fuel',0x2d3135),[6.3,-1.3,-2.4]);
+cyl(0.18,0.15,blackP,[6.4,-0.63,-2.4]);
+cyl(0.3,1.0,MS('fuel',0xE9EDF0,{roughness:.5,metalness:.1}),[5.6,0.8,-2.2],'y',scene,24);
+cyl(0.32,0.18,blackP,[5.6,1.35,-2.2]);
+const railC=crv([[3.55,4.9,-1.05],[-3.45,4.9,-1.05]]);
+cyl(0.11,7.1,MS('fuel',0xB7BEC5,Object.assign({metalness:.8,roughness:.25},T(.5))),[0.05,4.9,-1.05],'x',scene,16);
+cyl(0.13,0.3,MS('fuel',0x8F989F,{metalness:.8}),[-3.7,4.9,-1.05],'x');
+cyl(0.16,0.18,blackP,[-3.9,4.9,-1.05],'x');
+CX.forEach((cx,i)=>{const vx=cx-0.38;const top=new V3(vx,4.78,-0.98),noz=new V3(vx,4.32,-0.62);
+  cylBetween(top,noz,0.065,MS('fuel',0x2a2d31,{roughness:.5}),0.075);
+  cylBetween(top,top.clone().add(new V3(0,0.1,-0.05)),0.08,MS('fuel',0x8F989F,{metalness:.8}));
+  box(0.14,0.1,0.12,MS('fuel',0x3a7a3a,{roughness:.6}),[vx+0.1,4.66,-0.86]);
+  const sg=new THREE.ConeGeometry(0.15,0.5,18,1,true);sg.translate(0,-0.25,0);
+  const s=mesh(sg,MB('fuel',0xF3E36A,{transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false}),[noz.x,noz.y,noz.z]);
+  s.quaternion.setFromUnitVectors(new V3(0,-1,0),new V3(0,3.62-4.32,-0.18+0.62).normalize());s.visible=false;sprays.push(s);
+  stream('fuel',crv([[vx,4.9,-1.05],[vx,4.78,-0.98],[vx,4.32,-0.62]]),0.035,cFuel,cFuel,1.0,()=>injActive[i]);
+});
+stream('fuel',crv([[6.3,-0.65,-2.4],[5.9,-0.2,-2.3],[5.6,0.3,-2.2]]),0.035,cFuel,cFuel,0.8,null,[0.05,fPipe]);
+stream('fuel',crv([[5.6,1.35,-2.2],[5.1,2.6,-1.8],[4.3,4.5,-1.25],[3.55,4.9,-1.05]]),0.035,cFuel,cFuel,0.9,null,[0.05,fPipe]);
+stream('fuel',railC,0.06,cFuel,cFuel,0.8);
+stream('fuel',crv([[-3.95,4.9,-1.05],[-4.2,4.3,-1.6],[-3.3,-0.5,-1.75],[5.0,-0.5,-1.75],[6.3,-0.62,-2.55]]),0.03,cFuel,cFuel,0.7,null,[0.045,fPipe]);
+/* ECU & sensors */
+box(1.0,0.7,0.25,MS('fuel',0x9DA6AE,{metalness:.6}),[6.6,2.6,-2.6]);
+for(let i=0;i<7;i++)box(0.9,0.04,0.06,MS('fuel',0x7d868e),[6.6,2.32+i*0.09,-2.46]);
+box(0.4,0.22,0.2,blackP,[6.25,2.6,-2.42]);
+cyl(0.08,0.35,blackP,[4.3,-1.6,0.5],'y');
+cyl(0.08,0.3,blackP,[-4.25,5.75,0]);
+const wireMat=(s)=>MS(s,0x2a2a2a,{roughness:.7,metalness:0,emissive:0x000000});
+CX.forEach((cx,i)=>{const vx=cx-0.38;const m=wireMat('fuel');injWires.push(m);tube(crv([[6.2,2.55,-2.45],[4.2,5.4,-1.6],[vx+0.1,5.25,-1.25],[vx+0.1,4.72,-0.88]]),0.022,m,60,5)});
+[[[6.2,2.8,-2.45],[5.6,4.6,-2.45],[5.0,5.55,-2.05]],
+ [[6.2,2.7,-2.5],[4.6,4.3,-2.6],[3.85,5.0,-2.43]],
+ [[6.2,2.9,-2.45],[2,5.9,-2.3],[-3.0,5.5,-2.0]],
+ [[6.2,2.4,-2.5],[5.4,0.5,-1.0],[4.9,-1.4,0.2],[4.3,-1.45,0.5]],
+ [[6.2,2.95,-2.45],[3,6.3,-1.3],[-3.5,6.2,-0.5],[-4.25,5.9,0]],
+ [[6.2,3.0,-2.45],[0,6.1,1.1],[-3.9,5.1,0.7],[-4.05,4.8,0.55]]].forEach(p=>tube(crv(p),0.02,MS('fuel',0x2a2a2a,{roughness:.7,metalness:0}),60,5));
+
+/* ---------- IGNITION ---------- */
+const sparks=[],coilMats=[];
+CX.forEach((cx,i)=>{
+  cyl(0.06,0.15,steel,[cx,3.42,-0.3],'y',scene,12);
+  cyl(0.1,0.1,MS('ign',0xB0B8BF,{metalness:.8}),[cx,3.55,-0.3],'y',scene,6);
+  cyl(0.07,0.9,MS('ign',0xF2EFE8,{roughness:.35,metalness:0}),[cx,4.05,-0.3],'y',scene,16);
+  const cm=MS('ign',0x1d2023,{roughness:.5,metalness:.1,emissive:0x000000});coilMats.push(cm);
+  cyl(0.13,0.75,cm,[cx,4.93,-0.3],'y',scene,20);
+  box(0.22,0.14,0.3,MS('ign',0x2b2f33,{roughness:.5}),[cx+0.05,5.33,-0.3]);
+  const sk=mesh(new THREE.SphereGeometry(0.09,12,10),new THREE.MeshBasicMaterial({color:0xDCE8FF,transparent:true,opacity:1,depthWrite:false}),[cx,3.28,-0.3]);sk.visible=false;sparks.push(sk);
+  const m=wireMat('ign');coilWires.push(m);tube(crv([[6.2,2.65,-2.45],[4.6,5.8,-1.5],[cx+0.4,5.75,-0.7],[cx+0.12,5.42,-0.3]]),0.024,m,60,5);
+});
+box(0.18,0.18,0.12,MS('ign',0x5a6066),[0.0,1.0,1.06]);
+tube(crv([[6.2,2.3,-2.5],[5.2,1.6,0.6],[2.0,1.2,1.15],[0.05,1.0,1.1]]),0.02,MS('ign',0x2a2a2a,{roughness:.7,metalness:0}),60,5);
+
+/* ---------- EXHAUST ---------- */
+const exPortM=MS('exh',0x6a4a3e,Object.assign({roughness:.6,metalness:.4,emissive:0x2a0800,side:THREE.DoubleSide},T(.45)));
+const exRun=[];
+CX.forEach((cx,i)=>{const c=crv([[cx+0.38,3.42,0],[cx+0.38,3.6,0.25],[cx+0.38,3.95,0.75],[cx+0.38,3.95,1.35]]);tube(c,0.15,exPortM,30);
+  exRun.push(stream('exh',c,0.08,cExHot,cExHot,1.6,()=>lEx[i]>0.02))});
+const collC=crv([[-2.32,3.95,1.35],[3.08,3.95,1.35],[3.9,3.95,1.4],[4.45,3.4,1.75],[4.45,1.2,1.85],[4.8,0.6,1.85],[5.0,0.6,1.85]]);
+tube(collC,0.19,exPortM,90);
+stream('exh',collC,0.1,cExHot,cDirty,1.8);
+/* catalytic converter (cut) */
+const catShell=MS('exh',0xC4CBD1,{metalness:.8,roughness:.3,side:THREE.DoubleSide});
+function xHalf(r1,r2,len,mat,x,y,z,sx=1,sz=1){const m=mesh(new THREE.CylinderGeometry(r1,r2,len,40,1,true,PI/2,PI),mat,[x,y,z]);m.rotation.z=PI/2;m.scale.set(1,1,sz);return m}
+xHalf(0.46,0.46,1.3,catShell,5.8,0.6,1.85);
+xHalf(0.46,0.19,0.3,catShell,5.0,0.6,1.85);
+xHalf(0.19,0.46,0.3,catShell,6.6,0.6,1.85);
+const honey=canvasTex(64,64,(g)=>{g.fillStyle='#3a332c';g.fillRect(0,0,64,64);g.fillStyle='#d8cfb8';for(let y=0;y<64;y+=8)for(let x=0;x<64;x+=8)g.fillRect(x+1,y+1,6,6);});
+honey.repeat.set(6,4);
+xHalf(0.4,0.4,1.1,MS('exh',0xffffff,{map:honey,roughness:.8,metalness:0,side:THREE.DoubleSide}),5.8,0.6,1.85);
+const hcut=new THREE.PlaneGeometry(1.1,0.8);const hcTex=canvasTex(64,64,(g)=>{g.fillStyle='#d8cfb8';g.fillRect(0,0,64,64);g.fillStyle='#4a4038';for(let y=0;y<64;y+=8)g.fillRect(0,y,64,3);});
+hcTex.repeat.set(1,3);mesh(hcut,MS('exh',0xffffff,{map:hcTex,roughness:.8,metalness:0,side:THREE.DoubleSide}),[5.8,0.6,1.85]);
+[0.42,0.6,0.78].forEach(y=>stream('exh',crv([[5.0,0.6,1.92],[5.25,y,1.92],[6.35,y,1.92],[6.6,0.6,1.92]]),0.05,cDirty,cClean,1.4));
+cyl(0.05,0.25,MS('exh',0xB0B8BF,{metalness:.8}),[4.62,2.0,2.02],'x',scene,6);
+cylBetween(new V3(4.6,2.0,1.9),new V3(4.85,2.15,2.15),0.05,MS('exh',0xB0B8BF,{metalness:.8}));
+cylBetween(new V3(6.95,0.85,1.95),new V3(6.98,1.12,2.15),0.05,MS('exh',0xB0B8BF,{metalness:.8}));
+tube(crv([[6.2,2.45,-2.4],[6.3,2.6,0.8],[4.85,2.2,2.2]]),0.02,MS('exh',0x2a2a2a,{roughness:.7,metalness:0}),50,5);
+tube(crv([[6.2,2.35,-2.4],[7.1,1.6,0.5],[6.98,1.15,2.15]]),0.02,MS('exh',0x2a2a2a,{roughness:.7,metalness:0}),50,5);
+const pipeC2=crv([[6.75,0.6,1.85],[7.4,0.2,1.85],[8.0,0.0,1.85]]);
+tube(pipeC2,0.17,MS('exh',0x8a9097,Object.assign({metalness:.7},T(.5))),40);
+stream('exh',crv([[6.6,0.6,1.85],[6.75,0.6,1.85],[7.4,0.2,1.85],[8.0,0.0,1.85]]),0.09,cClean,cClean,1.6);
+/* muffler */
+const mufM=MS('exh',0x9AA2A9,{metalness:.75,roughness:.35,side:THREE.DoubleSide});
+xHalf(0.55,0.55,1.8,mufM,8.9,0.0,1.85,1,0.8);
+[8.3,9.5].forEach(x=>{const d=mesh(new THREE.CircleGeometry(0.55,32,PI/2,PI),mufM,[x,0,1.85]);d.rotation.y=PI/2;d.scale.set(0.8,1,1)});
+const perf=canvasTex(32,32,(g)=>{g.fillStyle='#9aa2a9';g.fillRect(0,0,32,32);g.fillStyle='#2a2e32';for(let y=2;y<32;y+=8)for(let x=2;x<32;x+=8)g.fillRect(x,y,4,4)});
+perf.repeat.set(6,2);
+cyl(0.13,1.8,MS('exh',0xffffff,{map:perf,metalness:.6}),[8.9,0.15,1.75],'x',scene,16);
+stream('exh',crv([[8.0,0.0,1.9],[8.6,0.15,1.92],[9.3,-0.1,1.92],[9.8,0.0,1.9]]),0.09,cClean,cClean,1.2);
+const tailC=crv([[9.8,0.0,1.85],[10.8,-0.1,1.85]]);
+tube(tailC,0.14,MS('exh',0xC4CBD1,Object.assign({metalness:.8},T(.55))),20);
+stream('exh',tailC,0.08,cClean,cClean,1.6);
+
+/* ---------- COOLING ---------- */
+const hoseM=MS('cool',0x23272b,Object.assign({roughness:.8,metalness:0},T(.5)));
+cyl(0.42,0.35,MS('cool',0x9BA4AB,{metalness:.6}),[-4.1,1.6,0.6],'x',scene,24);
+cyl(0.2,0.35,MS('cool',0x9BA4AB,{metalness:.6}),[-4.2,4.45,0.6],'x',scene,16);
+cyl(0.07,0.25,MS('cool',0xC9A227),[-4.05,4.72,0.55]);
+const radTex=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#2f3438';g.fillRect(0,0,w,h);g.fillStyle='#6f777e';for(let y=0;y<h;y+=3)g.fillRect(0,y,w,1);g.fillStyle='#9aa2a9';for(let x=0;x<w;x+=16)g.fillRect(x,0,6,h)});
+radTex.repeat.set(3,6);
+box(0.32,3.5,3.0,MS('cool',0xffffff,{map:radTex,metalness:.4,roughness:.5}),[-7.4,2.2,0]);
+box(0.45,0.4,3.1,MS('cool',0x2a2d30,{roughness:.7,metalness:.1}),[-7.4,4.15,0]);
+box(0.45,0.4,3.1,MS('cool',0x2a2d30,{roughness:.7,metalness:.1}),[-7.4,0.25,0]);
+cyl(0.14,0.15,MS('cool',0xC9A227),[-7.4,4.42,-1.0]);
+const fan=new THREE.Group();fan.position.set(-6.85,2.2,0);scene.add(fan);
+cyl(0.25,0.2,MS('cool',0x2a2d30),[0,0,0],'x',fan);
+for(let k=0;k<7;k++){const b=box(0.04,1.1,0.32,MS('cool',0x33373b,{roughness:.6}),[0,0,0],fan);b.geometry.translate(0,0.68,0);b.rotation.x=k/7*PI*2;b.rotateY(0.35)}
+const shroud=mesh(new THREE.TorusGeometry(1.42,0.05,8,48),MS('cool',0x2a2d30),[-6.85,2.2,0]);shroud.rotation.y=PI/2;
+cyl(0.3,0.35,MS('cool',0x2a2d30),[-6.55,2.2,0],'x');
+box(0.9,0.7,0.6,MS('cool',0xEEF2F4,Object.assign({roughness:.4,metalness:0},T(.55))),[-6.1,5.1,-1.3]);
+box(0.85,0.35,0.55,MS('cool',0x2EA36B,Object.assign({roughness:.2,metalness:0},T(.7))),[-6.1,4.93,-1.3]);
+tube(crv([[-6.55,5.0,-1.3],[-7.1,4.75,-1.1],[-7.4,4.5,-1.0]]),0.04,hoseM,30,6);
+let warm=true;
+const passCool=MS('cool',0x2E86DE,Object.assign({roughness:.2,metalness:0},T(.2)));
+stream('cool',crv([[-3.95,1.6,0.75],[-3.6,1.7,0.92],[3.6,1.7,0.92],[3.75,2.6,0.9],[3.6,4.4,0.78],[-3.6,4.4,0.78],[-4.2,4.45,0.6]]),0.08,cCold,cHot,1.3,null,[0.11,passCool]);
+stream('cool',crv([[-4.2,4.45,0.6],[-5.3,4.75,0.6],[-6.6,4.6,0.5],[-7.3,4.15,0.4]]),0.09,cHot,cHot,1.3,()=>warm,[0.13,hoseM]);
+sheet('cool',2.9,3.4,[-7.22,2.2,0],cHot,cCold,0.9,()=>warm);
+sheet('cool',2.9,3.4,[-7.58,2.2,0],cHot,cCold,0.9,()=>warm);
+stream('cool',crv([[-7.3,0.25,0.6],[-6.2,0.4,1.0],[-5.0,1.0,0.95],[-4.1,1.3,0.95]]),0.09,cCold,cCold,1.3,()=>warm,[0.13,hoseM]);
+stream('cool',crv([[-4.25,4.3,0.75],[-4.6,3.2,1.15],[-4.35,1.95,0.95]]),0.06,cWarm,cWarm,1.0,()=>!warm,[0.09,hoseM]);
+
+/* ---------- LUBRICATION ---------- */
+const oilPipe=MS('lube',0xC98A1A,Object.assign({roughness:.3,metalness:.3},T(.3)));
+cyl(0.3,0.1,MS('lube',0x6d757c),[-3.25,-1.88,0],'y',scene,24);
+cyl(0.55,0.22,MS('lube',0xA9B0B6,{metalness:.6}),[-4.12,0,0],'x',scene,32);
+const filt=new THREE.Group();filt.position.set(-2.8,0.55,1.45);scene.add(filt);
+cyl(0.32,0.7,MS('lube',0x1F5FAF,{metalness:.4,roughness:.35}),[0,0,0],'z',filt,28);
+cyl(0.36,0.08,dsteel,[0,0,-0.36],'z',filt,28);
+tube(crv([[1.4,-1.7,0.8],[1.5,0.5,1.05],[1.6,3.25,1.15]]),0.03,MS('lube',0x9aa2a9,{metalness:.8}),40,6);
+mesh(new THREE.TorusGeometry(0.12,0.035,8,20),MS('lube',0xF2C230),[1.6,3.4,1.15]);
+cyl(0.1,0.12,MS('lube',0x8c949b),[3.98,0.6,-1.05],'z',scene,6);
+stream('lube',crv([[-3.25,-1.85,0],[-3.25,-1.2,0.85],[-3.9,-0.6,0.85],[-4.12,-0.35,0.45]]),0.045,cOil,cOil,0.8,null,[0.065,oilPipe]);
+stream('lube',crv([[-4.12,0.35,0.45],[-3.95,0.5,1.0],[-3.05,0.55,1.12]]),0.045,cOil,cOil,0.8,null,[0.065,oilPipe]);
+stream('lube',crv([[-2.55,0.55,1.12],[-3.8,0.6,1.0],[-3.85,0.6,-0.9]]),0.045,cOil,cOil,0.8,null,[0.065,oilPipe]);
+stream('lube',crv([[-3.85,0.6,-0.9],[3.8,0.6,-0.9]]),0.05,cOil,cOil,0.9,null,[0.07,oilPipe]);
+JX.forEach(x=>stream('lube',crv([[x,0.6,-0.9],[x,0.3,-0.5],[x,0.12,-0.2]]),0.03,cOil,cOil,0.5,null,[0.045,oilPipe]));
+stream('lube',crv([[3.8,0.6,-0.9],[3.8,3.0,-0.95],[3.75,4.8,-0.4],[3.7,5.25,0.18],[-3.9,5.25,0.18]]),0.04,cOil,cOil,0.9,null,[0.06,oilPipe]);
+stream('lube',crv([[-3.9,5.25,0.18],[-3.75,4.2,-0.6],[-3.75,1.2,-0.6],[-3.6,-1.5,-0.5]]),0.04,cOil,cOil,0.7,null,[0.06,oilPipe]);
+const SPL=110,spIM=new THREE.InstancedMesh(new THREE.SphereGeometry(0.045,6,5),MB('lube',0xF0B02A),SPL);scene.add(spIM);
+const drops=[];for(let i=0;i<SPL;i++)drops.push({p:new V3(),v:new V3(),life:0});
+
+/* shadows for solid parts */
+scene.traverse(o=>{if(o.isMesh&&o!==floor){const m=o.material;if(m&&!m.transparent&&!m.isMeshBasicMaterial){o.castShadow=true;o.receiveShadow=true}}});
+
+/* ---------- labels ---------- */
+const S={core:'મિકેનિકલ',air:'એર ઇન્ટેક',fuel:'ફ્યુઅલ (MPFI)',ign:'ઇગ્નીશન',exh:'એક્ઝોસ્ટ',cool:'કૂલિંગ',lube:'લુબ્રિકેશન'};
+const P=(n,sys,name,info,pos,main)=>({n,sys,name,info,pos,main});
+const PARTS=[
+P(1,'core','પિસ્ટન','સિલિન્ડરમાં ઉપર-નીચે ફરે; દહનનું દબાણ ઝીલે. 3 રીંગ: 2 કમ્પ્રેશન, 1 ઓઇલ. વાલ્વ માટે ઉપર ખાંચા (વાલ્વ રીસેસ).',()=>new V3(CX[0],pY[0]+0.2,0.8),1),
+P(2,'core','કનેક્ટીંગ રોડ','પિસ્ટનને ક્રેન્કશાફ્ટ સાથે જોડે.',()=>rods[1].position.clone().add(new V3(0,0,0.5)),1),
+P(3,'core','ક્રેન્કશાફ્ટ','ઉપર-નીચેની ગતિને ગોળ ગતિમાં ફેરવે; 5 મેઇન જર્નલ, 4 ક્રેન્ક પિન.',()=>new V3(-1.8,-0.25,0.7),1),
+P(4,'core','ફ્લાયવ્હીલ અને રીંગ ગિયર','ગતિ એકસરખી રાખે; રીંગ ગિયર પર સ્ટાર્ટર એન્જિન ચાલુ કરે.',()=>new V3(4.35,1.2,0.9)),
+P(5,'core','કેમશાફ્ટ','ક્રેન્કની અડધી ઝડપે ફરી વાલ્વ ખોલે.',()=>new V3(-1.8,CAMY+0.4,0.3),1),
+P(6,'core','ઇનલેટ વાલ્વ','સક્શન સ્ટ્રોકમાં ખૂલી હવા-પેટ્રોલ મિશ્રણ અંદર આવવા દે.',()=>new V3(CX[1]-0.38,3.75-lIn[1],0.3)),
+P(7,'core','એક્ઝોસ્ટ વાલ્વ','એક્ઝોસ્ટ સ્ટ્રોકમાં ખૂલી બળેલા વાયુ બહાર જવા દે.',()=>new V3(CX[1]+0.38,3.75-lEx[1],0.3)),
+P(8,'core','વાલ્વ સ્પ્રિંગ','વાલ્વને પાછો બંધ કરે.',()=>new V3(CX[2]-0.38,4.25,0.3)),
+P(9,'core','ટાઇમિંગ બેલ્ટ','ક્રેન્કથી કેમશાફ્ટ ચલાવે (2:1); ટેન્શનર બેલ્ટ તંગ રાખે.',()=>new V3(-4.45,4.1,-0.62),1),
+P(10,'core','સિલિન્ડર બ્લોક','એન્જિનનો મુખ્ય ઢાંચો.',()=>new V3(3.9,0.3,1.0)),
+P(11,'core','સિલિન્ડર હેડ','વાલ્વ, કેમશાફ્ટ, સ્પાર્ક પ્લગ તેમાં લાગે.',()=>new V3(3.9,5.0,0.95)),
+P(12,'core','સ્ટાર્ટર મોટર','રીંગ ગિયર ફેરવી એન્જિન ચાલુ કરે.',()=>new V3(3.5,-0.75,1.7)),
+P(13,'core','ઓલ્ટરનેટર','વીજળી ઉત્પન્ન કરી બેટરી ચાર્જ કરે.',()=>new V3(-4.2,3.2,1.8)),
+P(14,'core','એક્સેસરી બેલ્ટ','ક્રેન્ક પુલીથી વોટર પંપ અને ઓલ્ટરનેટર ચલાવે.',()=>new V3(-4.85,1.0,1.05)),
+P(15,'air','એર ફિલ્ટર','હવામાંથી ધૂળ દૂર કરે.',()=>new V3(6.2,5.75,-2.0),1),
+P(16,'air','MAF સેન્સર','અંદર જતી હવાનું પ્રમાણ (માસ) માપી ECU ને આપે.',()=>new V3(5.0,5.75,-2.0)),
+P(17,'air','થ્રોટલ બોડી','અંદરનો બટરફ્લાય વાલ્વ એક્સિલરેટર પ્રમાણે ખૂલી હવા નિયંત્રિત કરે.',()=>new V3(3.85,5.5,-2.0),1),
+P(18,'air','થ્રોટલ પોઝીશન સેન્સર (TPS)','થ્રોટલ કેટલો ખુલ્લો છે તે ECU ને જણાવે.',()=>new V3(3.85,5.0,-2.6)),
+P(19,'air','ઇન્ટેક મેનીફોલ્ડ (પ્લેનમ)','હવા સંગ્રહી દરેક રનરમાં સરખી વહેંચે.',()=>new V3(0,5.5,-2.0),1),
+P(20,'air','ઇન્ટેક રનર','દરેક સિલિન્ડરના ઇનલેટ પોર્ટ સુધી હવા લઈ જાય; અહીં જ ઇન્જેક્ટર લાગેલો હોય.',()=>new V3(CX[1]-0.38,4.75,-1.45)),
+P(21,'air','MAP સેન્સર','મેનીફોલ્ડનું દબાણ (લોડ) ECU ને આપે.',()=>new V3(-3.0,5.65,-2.0)),
+P(22,'fuel','ફ્યુઅલ ટાંકી','પેટ્રોલનો સંગ્રહ.',()=>new V3(6.9,-0.45,-2.0),1),
+P(23,'fuel','ફ્યુઅલ પંપ (ટાંકીમાં)','ઇલેક્ટ્રિક પંપ; ઇગ્નીશન ચાલુ કરતાં જ પેટ્રોલ દબાણે મોકલે.',()=>new V3(6.3,-1.3,-1.75)),
+P(24,'fuel','ફ્યુઅલ ફિલ્ટર','પેટ્રોલમાંથી કચરો ગાળે.',()=>new V3(5.6,1.55,-2.0)),
+P(25,'fuel','ફ્યુઅલ રેલ','આશરે 3–4 બાર દબાણનું પેટ્રોલ બધા ઇન્જેક્ટરને આપે.',()=>new V3(1.8,5.12,-1.05),1),
+P(26,'fuel','ઇન્જેક્ટર (MPFI)','ECU ના સિગ્નલથી ખૂલે અને ઇનલેટ વાલ્વની પાછળ પોર્ટમાં પેટ્રોલ છાંટે. દરેક સિલિન્ડર માટે અલગ.',()=>new V3(CX[0]-0.38,4.6,-0.72),1),
+P(27,'fuel','પ્રેશર રેગ્યુલેટર','રેલનું દબાણ નિયંત્રિત રાખે; વધારાનું પેટ્રોલ રિટર્નમાં મોકલે.',()=>new V3(-3.8,5.15,-1.05)),
+P(28,'fuel','રિટર્ન લાઇન','વધારાનું પેટ્રોલ ટાંકીમાં પાછું લઈ જાય.',()=>new V3(1.0,-0.5,-1.95)),
+P(29,'fuel','ECU','સેન્સરના સિગ્નલ પરથી ઇન્જેક્શનનો સમય-માત્રા અને સ્પાર્ક ટાઇમિંગ નક્કી કરે.',()=>new V3(6.6,3.1,-2.6),1),
+P(30,'fuel','ક્રેન્ક પોઝીશન સેન્સર (CKP)','ક્રેન્કની સ્થિતિ અને RPM ECU ને આપે.',()=>new V3(4.3,-1.65,0.75)),
+P(31,'fuel','કેમ પોઝીશન સેન્સર (CMP)','કયો સિલિન્ડર કયા સ્ટ્રોકમાં છે તે ઓળખાવે.',()=>new V3(-4.25,6.0,0.1)),
+P(32,'ign','સ્પાર્ક પ્લગ','ઇલેક્ટ્રોડ વચ્ચે તણખો આપી મિશ્રણ સળગાવે.',()=>new V3(CX[2],3.9,-0.1),1),
+P(33,'ign','ઇગ્નીશન કોઇલ (કોઇલ-ઓન-પ્લગ)','12 વોલ્ટને આશરે 20,000–40,000 વોલ્ટમાં ફેરવી પ્લગને આપે.',()=>new V3(CX[3],5.0,-0.05),1),
+P(34,'ign','નૉક સેન્સર','એન્જિનમાં ઠોકર (નૉકિંગ) જણાય તો ECU સ્પાર્ક ટાઇમિંગ પાછળ કરે.',()=>new V3(0,1.0,1.3)),
+P(35,'ign','ઇગ્નીશન વાયરીંગ','ECU નો સિગ્નલ દરેક કોઇલ સુધી પહોંચાડે.',()=>new V3(2.0,5.85,-0.75)),
+P(36,'exh','એક્ઝોસ્ટ મેનીફોલ્ડ','દરેક સિલિન્ડરનો ગરમ એક્ઝોસ્ટ ભેગો કરે.',()=>new V3(0.5,4.3,1.45),1),
+P(37,'exh','અપસ્ટ્રીમ O2 સેન્સર','એક્ઝોસ્ટમાં ઓક્સિજન માપી ECU ને મિશ્રણ (રિચ/લીન) જણાવે.',()=>new V3(4.85,2.35,2.25)),
+P(38,'exh','કેટાલિટીક કન્વર્ટર','CO, HC, NOx જેવા ઝેરી વાયુને CO2, પાણીની વરાળ અને N2 માં ફેરવે.',()=>new V3(5.8,1.2,2.0),1),
+P(39,'exh','હનીકોમ્બ (મોનોલિથ)','સિરામિકની બારીક નળીઓ; તેના પર પ્લેટિનમ, પેલેડિયમ, રોડિયમનું પડ.',()=>new V3(5.55,0.6,2.05)),
+P(40,'exh','ડાઉનસ્ટ્રીમ O2 સેન્સર','કન્વર્ટર બરાબર કામ કરે છે કે નહીં તે ECU ને જણાવે.',()=>new V3(6.98,1.3,2.15)),
+P(41,'exh','સાઇલેન્સર (મફલર)','અંદરની છિદ્રવાળી નળી અને પડદાથી એક્ઝોસ્ટનો અવાજ ઘટાડે.',()=>new V3(8.9,0.6,1.9),1),
+P(42,'exh','ટેલ પાઇપ','શુદ્ધ થયેલો એક્ઝોસ્ટ બહાર કાઢે.',()=>new V3(10.6,0.15,1.85)),
+P(43,'cool','વોટર પંપ','કૂલન્ટને સિસ્ટમમાં ફેરવે.',()=>new V3(-4.1,1.6,1.1),1),
+P(44,'cool','વોટર જેકેટ','સિલિન્ડરની આસપાસ કૂલન્ટનો માર્ગ.',()=>new V3(0.9,2.6,-1.0)),
+P(45,'cool','થર્મોસ્ટેટ','આશરે 82–88°C એ ખૂલે; ઠંડા એન્જિનમાં બંધ રહે.',()=>new V3(-4.3,4.8,0.75),1),
+P(46,'cool','રેડિએટર','ગરમ કૂલન્ટ ટ્યુબ-ફિન્સમાં હવાથી ઠંડું થાય.',()=>new V3(-7.4,2.7,1.65),1),
+P(47,'cool','કૂલીંગ ફેન','રેડિએટરમાંથી હવા ખેંચે.',()=>new V3(-6.85,3.5,0.7)),
+P(48,'cool','અપર હોઝ','ગરમ કૂલન્ટ રેડિએટરમાં લઈ જાય.',()=>new V3(-5.5,4.95,0.6)),
+P(49,'cool','લોઅર હોઝ','ઠંડું કૂલન્ટ પંપમાં લઈ જાય.',()=>new V3(-5.6,0.65,1.15)),
+P(50,'cool','એક્સપાન્શન ટાંકી','ફૂલેલું કૂલન્ટ સંગ્રહે; લેવલ અહીંથી ચેક કરાય.',()=>new V3(-6.1,5.6,-1.3)),
+P(51,'cool','બાયપાસ હોઝ','થર્મોસ્ટેટ બંધ હોય ત્યારે કૂલન્ટ સીધું પંપમાં જાય.',()=>new V3(-4.75,3.2,1.3)),
+P(52,'cool','કૂલન્ટ ટેમ્પ સેન્સર (ECT)','કૂલન્ટનું તાપમાન ECU ને આપે; ઠંડા એન્જિનમાં ECU વધુ પેટ્રોલ આપે.',()=>new V3(-4.0,5.0,0.4)),
+P(53,'lube','ઓઇલ સમ્પ','એન્જિન ઓઇલનો સંગ્રહ.',()=>new V3(2.0,-1.95,1.0),1),
+P(54,'lube','ઓઇલ સ્ટ્રેનર','મોટો કચરો રોકે.',()=>new V3(-3.25,-1.75,0.45)),
+P(55,'lube','ઓઇલ પંપ','ક્રેન્કથી ચાલી ઓઇલ દબાણે મોકલે.',()=>new V3(-4.12,-0.6,0.45)),
+P(56,'lube','ઓઇલ ફિલ્ટર','ઓઇલમાંથી બારીક કચરો ગાળે.',()=>new V3(-2.8,0.55,1.95),1),
+P(57,'lube','મેઇન ઓઇલ ગેલેરી','મેઇન બેરીંગ અને હેડ સુધી ઓઇલ પહોંચાડે.',()=>new V3(0,0.85,-1.0)),
+P(58,'lube','ડીપ સ્ટિક','ઓઇલનું લેવલ ચેક કરવા (MIN–MAX).',()=>new V3(1.6,3.55,1.15)),
+P(59,'lube','ઓઇલ પ્રેશર સ્વિચ','ઓઇલ પ્રેશર ઓછું થાય તો ડેશબોર્ડ લાઇટ કરે.',()=>new V3(4.0,0.85,-1.1))
+];
+const labelBox=document.getElementById('labels'),lblEls=[];
+const info=document.getElementById('info');
+let mode='all';
+function select(i){lblEls.forEach((e,j)=>e.classList.toggle('sel',j===i));const p=PARTS[i];
+  info.hidden=false;document.getElementById('iTitle').textContent=p.n+'. '+p.name+' – '+S[p.sys];document.getElementById('iText').textContent=p.info}
+PARTS.forEach((p,i)=>{const b=document.createElement('button');b.className='lbl';b.textContent=p.n;b.setAttribute('aria-label',p.name);
+  b.addEventListener('pointerdown',e=>e.stopPropagation());b.onclick=()=>select(i);labelBox.appendChild(b);lblEls.push(b)});
+const list=document.getElementById('partList');
+SYSN.forEach(s=>{const g=document.createElement('div');g.className='group';g.innerHTML='<h3>'+S[s]+'</h3>';const ol=document.createElement('ol');ol.className='parts';
+  PARTS.forEach((p,i)=>{if(p.sys!==s)return;const li=document.createElement('li');li.innerHTML='<div class="n">'+p.n+'</div><div><b>'+p.name+'</b><span>'+p.info+'</span></div>';
+    li.onclick=()=>{setMode(s);select(i);stage.scrollIntoView({behavior:'smooth',block:'start'})};ol.appendChild(li)});
+  g.appendChild(ol);list.appendChild(g)});
+document.getElementById('showL').onchange=e=>stage.classList.toggle('hide-labels',!e.target.checked);
+
+/* ---------- modes ---------- */
+const MODES={
+ all:['MPFI પેટ્રોલ એન્જિન','મલ્ટી પોઇન્ટ ફ્યુઅલ ઇન્જેક્શન: દરેક સિલિન્ડરના ઇન્ટેક પોર્ટમાં અલગ ઇન્જેક્ટર. ઉપરથી સિસ્ટમ પસંદ કરો; બાકીના ભાગ ઝાંખા થઈ જશે.','',[1.2,2.0,0],25],
+ core:['મિકેનિકલ ભાગો','પિસ્ટનની ઉપર-નીચેની ગતિ કનેક્ટીંગ રોડ દ્વારા ક્રેન્કશાફ્ટને ગોળ ગતિ આપે. ટાઇમિંગ બેલ્ટ કેમશાફ્ટ ચલાવે (2:1).','ક્રેન્કના 2 આંટા = 1 ચક્ર (720°) = કેમનો 1 આંટો',[0,2.4,0],14],
+ air:['એર ઇન્ટેક સિસ્ટમ','એક્સિલરેટર દબાવતાં થ્રોટલ વાલ્વ ખૂલે અને વધુ હવા જાય. MAF સેન્સર હવાનું પ્રમાણ માપે; ECU તે પ્રમાણે પેટ્રોલ નક્કી કરે.','એર ફિલ્ટર → MAF → થ્રોટલ બોડી → ઇન્ટેક મેનીફોલ્ડ → રનર → ઇનલેટ વાલ્વ',[1.5,4.3,-1.2],13],
+ fuel:['ફ્યુઅલ સિસ્ટમ (MPFI)','ટાંકીમાંનો ઇલેક્ટ્રિક પંપ 3–4 બાર દબાણે પેટ્રોલ રેલમાં મોકલે. ECU દરેક ઇન્જેક્ટરને ક્રમ પ્રમાણે (સિક્વેન્શિયલ) ખોલે; પેટ્રોલ ઇનલેટ વાલ્વની પાછળ છંટાઈ હવા સાથે મિશ્રણ બને. આદર્શ હવા:પેટ્રોલ = 14.7:1.','ટાંકી (પંપ) → ફિલ્ટર → ફ્યુઅલ રેલ → ઇન્જેક્ટર → ઇન્ટેક પોર્ટ | રેગ્યુલેટર → રિટર્ન → ટાંકી',[1.8,2.5,-1.2],17],
+ ign:['ઇગ્નીશન સિસ્ટમ','CKP-CMP સેન્સર પરથી ECU નક્કી કરે કે કયા સિલિન્ડરમાં ક્યારે સ્પાર્ક આપવો. કોઇલ હજારો વોલ્ટ બનાવે; TDC પહેલાં પ્લગ તણખો આપે. નૉક સેન્સર ઠોકર પકડે તો ECU ટાઇમિંગ પાછળ કરે.','ECU → ઇગ્નીશન કોઇલ → સ્પાર્ક પ્લગ → તણખો → દહન',[0.5,4.0,-0.3],12],
+ exh:['એક્ઝોસ્ટ અને કેટાલિટીક કન્વર્ટર','કન્વર્ટરના હનીકોમ્બ પર પ્લેટિનમ, પેલેડિયમ, રોડિયમનું પડ હોય. ઝેરી CO, HC, NOx ને CO2, પાણીની વરાળ અને N2 માં ફેરવે. બે O2 સેન્સર મિશ્રણ અને કન્વર્ટરની કામગીરી ECU ને જણાવે.','એક્ઝોસ્ટ વાલ્વ → મેનીફોલ્ડ → O2 સેન્સર → કેટાલિટીક કન્વર્ટર → O2 સેન્સર → સાઇલેન્સર → ટેલ પાઇપ',[5.0,1.6,1.4],16],
+ cool:['કૂલિંગ સિસ્ટમ','ગરમ એન્જિનમાં થર્મોસ્ટેટ ખુલ્લો; કૂલન્ટ રેડિએટરમાં ઠંડું થાય. "ઠંડું એન્જિન" પસંદ કરો: થર્મોસ્ટેટ બંધ, કૂલન્ટ બાયપાસથી પાછું જાય, ફેન બંધ.','વોટર પંપ → વોટર જેકેટ → હેડ → થર્મોસ્ટેટ → અપર હોઝ → રેડિએટર → લોઅર હોઝ → વોટર પંપ',[-3.6,2.5,0],15],
+ lube:['લુબ્રિકેશન સિસ્ટમ','ઓઇલ દબાણે બેરીંગ અને કેમશાફ્ટ સુધી જાય; ફરતા ક્રેન્કથી ઓઇલ છંટાઈ સિલિન્ડરની દીવાલ લુબ્રિકેટ કરે.','સમ્પ → સ્ટ્રેનર → ઓઇલ પંપ → ઓઇલ ફિલ્ટર → મેઇન ગેલેરી → બેરીંગ / હેડ → પાછું સમ્પ',[-0.5,1.2,0],14]
+};
+const target=new V3(1.2,2.0,0),goalT=new V3(1.2,2.0,0);let th=0.5,ph=1.15,dist=25,goalD=25,portrait=false,gasDim=1;
+function setMode(m){mode=m;
+  document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  SYSN.forEach(s=>{const on=m==='all'||m===s;REG[s].forEach(mt=>{if(on){mt.transparent=mt.userData.t;mt.opacity=mt.userData.o;mt.depthWrite=mt.userData.d}
+    else{mt.transparent=true;mt.opacity=Math.min(mt.userData.o,0.08);mt.depthWrite=false}mt.needsUpdate=true})});
+  streams.forEach(f=>f.modeOn=(m==='all'||m===f.sys));
+  spIM.visible=(m==='all'||m==='lube');
+  gasDim=(m==='all'||m==='core'||m==='ign'||m==='fuel'||m==='air')?1:0.25;
+  PARTS.forEach((p,i)=>lblEls[i].classList.toggle('vis',m==='all'?!!p.main:p.sys===m));
+  const d=MODES[m];document.getElementById('mTitle').textContent=d[0];document.getElementById('mText').textContent=d[1];document.getElementById('mFlow').textContent=d[2];
+  goalT.set(d[3][0],d[3][1],d[3][2]);goalD=d[4]*(portrait?1.55:1);
+  info.hidden=true;lblEls.forEach(e=>e.classList.remove('sel'));
+}
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+
+/* camera controls */
+const ptrs=new Map();let pinch0=0,dist0=0;
+stage.addEventListener('pointerdown',e=>{stage.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);dist0=dist}});
+stage.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const p=ptrs.get(e.pointerId);
+  if(ptrs.size===1){th-=(e.clientX-p.x)*0.008;ph=Math.min(1.75,Math.max(0.2,ph-(e.clientY-p.y)*0.008))}
+  p.x=e.clientX;p.y=e.clientY;
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0){dist=goalD=Math.min(50,Math.max(4,dist0*pinch0/d))}}});
+['pointerup','pointercancel'].forEach(t=>stage.addEventListener(t,e=>{ptrs.delete(e.pointerId);pinch0=0}));
+stage.addEventListener('wheel',e=>{e.preventDefault();goalD=dist=Math.min(50,Math.max(4,dist*(1+e.deltaY*0.001)))},{passive:false});
+function placeCam(){target.lerp(goalT,0.08);dist+=(goalD-dist)*0.08;
+  camera.position.set(target.x+dist*Math.sin(ph)*Math.sin(th),target.y+dist*Math.cos(ph),target.z+dist*Math.sin(ph)*Math.cos(th));camera.lookAt(target)}
+
+/* controls */
+let theta=0,playing=true,speed=0.5;
+const playBtn=document.getElementById('play');
+playBtn.onclick=()=>{playing=!playing;playBtn.textContent=playing?'વિરામ':'ચાલુ કરો'};
+const stepBy=d=>{playing=false;playBtn.textContent='ચાલુ કરો';theta=(theta+d+720)%720};
+document.getElementById('back').onclick=()=>stepBy(-15);
+document.getElementById('fwd').onclick=()=>stepBy(15);
+document.getElementById('speed').oninput=e=>speed=+e.target.value;
+document.getElementById('cold').onchange=e=>{warm=!e.target.checked};
+const STN=['સક્શન','કમ્પ્રેશન','પાવર','એક્ઝોસ્ટ'];
+const cylBox=document.getElementById('cyls'),cylEls=[];
+for(let i=0;i<4;i++){const d=document.createElement('div');d.className='cyl';cylBox.appendChild(d);cylEls.push(d)}
+
+/* animation */
+const lift=(t,a)=>(t>=a&&t<=a+180)?LIFT*Math.sin(PI*(t-a)/180):0;
+const gc={mix:C(0xB6E27A),hot:C(0xFFC080),spark:C(0xF4F7FF),burn:C(0xFF5A1A),spent:C(0x8A6A5A),ex:C(0x9A9A9A)};
+function gasColor(t,o){if(t<180)return o.copy(gc.mix);if(t<343)return o.copy(gc.mix).lerp(gc.hot,(t-180)/163);
+  if(t<352)return o.copy(gc.spark);if(t<540)return o.copy(gc.burn).lerp(gc.spent,(t-352)/188);return o.copy(gc.ex)}
+const dummy=new THREE.Object3D();
+function update(dt){
+  if(playing)theta=(theta+dt*200*speed)%720;
+  const ed=playing?dt*speed:0;
+  crank.rotation.x=rad(theta);
+  let best=0,bestI=0,event='',sparkOn=-1;
+  for(let i=0;i<4;i++){
+    const t=(theta-OFF[i]+720)%720,a=rad(t),py=R*Math.cos(a),pz=R*Math.sin(a),yp=py+Math.sqrt(L*L-pz*pz);
+    pY[i]=yp;pistons[i].position.y=yp;
+    rods[i].position.set(CX[i],(py+yp)/2,pz/2);rods[i].rotation.x=Math.atan2(-pz,yp-py);
+    const top=yp+0.6;gases[i].position.y=top;gases[i].scale.y=Math.max(0.01,HEAD-top);
+    const gm=gasMats[i];gasColor(t,gm.color);
+    const fire=(t>=346&&t<440)?(t<352?(t-346)/6:1-(t-352)/88):0;
+    gm.emissive.copy(gm.color).multiplyScalar(fire*0.9);gm.opacity=(0.35+0.45*fire)*gasDim;
+    if(fire>best){best=fire;bestI=i}
+    lIn[i]=lift(t,0);lEx[i]=lift(t,540);
+    const v=valves[i];
+    [[v.in,lIn[i]],[v.ex,lEx[i]]].forEach(([q,l])=>{q.g.position.y=3.38-l;q.sp.scale.y=0.5-l;q.rt.position.y=4.5-l});
+    const phi=theta/2;v.in.lobe.rotation.x=rad(phi-(OFF[i]+90)/2);v.ex.lobe.rotation.x=rad(phi-(OFF[i]+630)/2);
+    const inj=t>=620&&t<690;injActive[i]=inj?1:0;
+    const s=sprays[i];s.visible=inj;if(inj){const k=Math.sin(PI*(t-620)/70);s.scale.set(0.4+0.7*k,0.4+0.8*k,0.4+0.7*k)}
+    injWires[i].emissive.setHex(inj?0xffc400:0x000000);
+    const sp=t>=343&&t<350;sparks[i].visible=sp;if(sp){const f=0.7+0.6*Math.random();sparks[i].scale.set(f,f,f);sparkOn=i}
+    coilWires[i].emissive.setHex(sp?0x9b7bff:0x000000);coilMats[i].emissive.setHex(sp?0x3a2a80:0x000000);
+    if(inj)event='સિ.'+(i+1)+' – ઇન્જેક્શન';else if(sp)event='સિ.'+(i+1)+' – સ્પાર્ક';else if(fire>0.5&&!event)event='સિ.'+(i+1)+' – દહન (પાવર)';
+    const si=Math.floor(t/180);const key=i+':'+si;
+    if(cylEls[i].dataset.k!==key){cylEls[i].dataset.k=key;cylEls[i].className='cyl s'+si;cylEls[i].innerHTML='સિલિન્ડર '+(i+1)+'<span>'+STN[si]+'</span>'}
+  }
+  if(sparkOn>=0){flash.color.setHex(0xaecbff);flash.position.set(CX[sparkOn],3.0,0.9);flash.intensity=3*gasDim}
+  else{flash.color.setHex(0xff7a2a);flash.position.set(CX[bestI],2.9,1.0);flash.intensity=best*3.5*gasDim}
+  camSpr.rotation.x=rad(theta/2);idler.rotation.x=rad(theta*2.2);tens.rotation.x=rad(theta*2);
+  wpPul.rotation.x=rad(theta*1.3);altPul.rotation.x=rad(theta*2.2);altG.rotation.x=rad(theta*2.2);
+  belts.forEach((b,k)=>b.offset.x-=ed*(k?2.6:2.0));
+  if(warm)fan.rotation.x+=ed*14;
+  const fs=0.35+speed*0.9;
+  streams.forEach(s=>{const want=s.active()?1:0;s.level+=(want-s.level)*Math.min(1,dt*10);
+    const show=s.modeOn&&s.level>0.02;
+    if(s.v)s.off+=dt*s.spd*fs/0.55;else s.off-=dt*s.spd*fs/0.55;
+    s.parts.forEach(q=>{q.ms.visible=show;if(!show)return;q.m.opacity=(s.v?0.8:0.95)*s.level;
+      if(s.v)q.tex.offset.y=q.start+s.off;else q.tex.offset.x=q.start+s.off})});
+  if(spIM.visible){
+    const spawn=Math.round((playing?3:0)*Math.min(2,speed+0.3));
+    for(let k=0;k<spawn;k++){const d=drops.find(q=>q.life<=0);if(!d)break;
+      const i=Math.floor(Math.random()*4),a=rad((theta-OFF[i]+720)%720);
+      d.p.set(CX[i]+(Math.random()-0.5)*0.4,R*Math.cos(a),R*Math.sin(a));
+      d.v.set((Math.random()-0.5)*1.2,-Math.sin(a)*3+Math.random()*2.5,Math.cos(a)*3+(Math.random()-0.5));d.life=0.6+Math.random()*0.4}
+    drops.forEach((d,k)=>{if(d.life>0){d.life-=ed;d.v.y-=7*ed;d.p.addScaledVector(d.v,ed);if(d.p.z<-0.85||d.p.z>0.85)d.v.z*=-0.3}
+      dummy.position.copy(d.p);const s=d.life>0?1:0;dummy.scale.set(s,s,s);dummy.updateMatrix();spIM.setMatrixAt(k,dummy.matrix)});
+    spIM.instanceMatrix.needsUpdate=true;
+  }
+  document.getElementById('bTitle').textContent='ક્રેન્ક '+Math.round(theta)+'° / 720°';
+  document.getElementById('bEvent').textContent=event||(warm?'એન્જિન ગરમ':'ઠંડું એન્જિન – થર્મોસ્ટેટ બંધ');
+}
+const pv=new V3();
+function placeLabels(w,h){if(stage.classList.contains('hide-labels'))return;
+  PARTS.forEach((p,i)=>{const el=lblEls[i];if(!el.classList.contains('vis'))return;pv.copy(p.pos()).project(camera);
+    if(pv.z>1||Math.abs(pv.x)>1.05||Math.abs(pv.y)>1.05){el.style.visibility='hidden';return}el.style.visibility='';
+    el.style.left=((pv.x+1)/2*w)+'px';el.style.top=((1-pv.y)/2*h)+'px'})}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  const pr=w/h<0.9;if(pr!==portrait){portrait=pr;goalD=MODES[mode][4]*(portrait?1.55:1);dist=goalD}}
+new ResizeObserver(resize).observe(stage);resize();
+setMode('all');
+let last=performance.now();
+function loop(now){const dt=Math.max(0,Math.min(0.05,(now-last)/1000));last=now;
+  update(dt);placeCam();renderer.render(scene,camera);placeLabels(stage.clientWidth,stage.clientHeight);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
